@@ -22,7 +22,6 @@ use strict;
 use warnings;
 use DBI;
 use Getopt::Long qw/:config bundling no_ignore_case posix_default/;
-use Data::Dumper;
 
 ### return values to Nagios.
 use constant NAGIOS_OK       => 0;
