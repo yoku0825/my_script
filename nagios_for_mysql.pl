@@ -101,5 +101,3 @@ EOS
   return 0;
 }
 
-__END__
-
