@@ -29,15 +29,21 @@ use constant NAGIOS_WARNING  => 1;
 use constant NAGIOS_CRITICAL => 2;
 use constant NAGIOS_UNKNOWN  => 3;
 
-GetOptions("user=s"      => \my $user,
-           "port=i"      => \my $port,
-           "password=s"  => \my $password,
-           "socket=s"    => \my $socket,
-           "sql=s"       => \my $sql,
-           "warning=i"   => \my $warning,
-           "critical=i"  => \my $critical,
-           "threshold=i" => \my $threshold,
-           "host=s"      => \my $host);
+GetOptions("user=s"       => \my $user,
+           "port=i"       => \my $port,
+           "password=s"   => \my $password,
+           "socket=s"     => \my $socket,
+           "sql=s"        => \my $sql,
+           "warning=i"    => \my $warning,
+           "critical=i"   => \my $critical,
+           "threshold=i"  => \my $threshold,
+           "host=s"       => \my $host,
+           "usage|h|help" => \my $usage);
+if ($usage)
+{
+  usage();
+  exit NAGIOS_OK;
+}
 
 ### --user, --host, --sql need to specified.
 if (!($user) || !($host) || !($sql))
