@@ -21,7 +21,6 @@
 use strict;
 use warnings;
 use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
-use Data::Dumper;
 
 ### aggrigation unit. "h|hour" => per hour, "m|minute" => per minute, "s|second" => per second.
 my $cell= "m";
@@ -43,6 +42,7 @@ while (<>)
   elsif (/^(insert|update|delete|replace)\s+(?:(?:into|from)?)\s+(\S+?)\s+/i)
   {
     my ($dml, $table)= (lc($1), lc($2));
+    $table =~ s/`//g;
 
     if ($time_string && $dml && $table)
     {
@@ -52,18 +52,18 @@ while (<>)
   }
 }
 
-=pod
 ### after reading all lines, printing them all.
 foreach my $time (sort(keys(%$count_hash)))
 {
-  foreach my $stmt qw/insert update delete replace/
+  foreach my $tbl (sort(keys(%{$count_hash->{$time}})))
   {
-    if (defined($count_hash->{$time}->{$stmt}))
-      {printf("%s\t%s\t%d\n", $time, $stmt, $count_hash->{$time}->{$stmt});}
+    foreach my $stmt qw/insert update delete replace/
+    {
+      if (defined($count_hash->{$time}->{$tbl}->{$stmt}))
+        {printf("%s\t%s\t%s\t%d\n", $time, $tbl, $stmt, $count_hash->{$time}->{$tbl}->{$stmt});}
+    }
   }
 }
-=cut
-print Dumper($count_hash);
 
 exit 0;
 
@@ -76,8 +76,10 @@ sub set_parser
 
   if ($granuality eq "h" || $granuality eq "hour")
     {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}):\d{2}:\d{2}/;}
-  elsif ($granuality eq "m" || $granuality eq "minute")
+  elsif ($granuality eq "m" || $granuality eq "minute" || $granuality eq "1m")
     {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}):\d{2}/;}
+  elsif ($granuality eq "10m")
+    {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{1})\d{1}:\d{2}/;}
   elsif ($granuality eq "s" || $granuality eq "second")
     {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{2})/;}
   else
@@ -110,7 +112,8 @@ options:
   --cell=string         Unit of aggregation.
                         Currentry supported are,
                           "s", "second",
-                          "m", "minute",
+                          "m", "minute", "1m",
+                          "10m", 
                           "h", "hour"
   --groupby=string      "time", "statement", "table", "all"
   --usage, --help, -h   Print this message.
