@@ -20,8 +20,8 @@
 
 use strict;
 use warnings;
-use Time::Piece;
 use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
+use Data::Dumper;
 
 ### aggrigation unit. "h|hour" => per hour, "m|minute" => per minute, "s|second" => per second.
 my $cell= "m";
@@ -30,7 +30,7 @@ GetOptions("cell=s"       => \$cell,
 usage() if $usage;
 my $header_parser= set_parser($cell);
 
-my ($time_string, $previous_string, $count_hash);
+my ($time_string, $count_hash);
 
 ### read from stdin.
 while (<>)
@@ -40,15 +40,19 @@ while (<>)
     {$time_string= $1;}
 
   ### parsing dml-line (only parse simple INSERT, UPDATE, DELETE, REPLACE)
-  elsif (/^(insert|update|delete|replace)\s+(?:(into|from)?)\s+(\S+?)\s+/i)
+  elsif (/^(insert|update|delete|replace)\s+(?:(?:into|from)?)\s+(\S+?)\s+/i)
   {
     my ($dml, $table)= (lc($1), lc($2));
 
-    if ($time_string && $dml)
-      {$count_hash->{$time_string}->{$dml}++;}
+    if ($time_string && $dml && $table)
+    {
+      $count_hash->{$time_string}->{$table}->{$dml}++;
+      $time_string= $dml= $table= "";
+    }
   }
 }
 
+=pod
 ### after reading all lines, printing them all.
 foreach my $time (sort(keys(%$count_hash)))
 {
@@ -58,6 +62,8 @@ foreach my $time (sort(keys(%$count_hash)))
       {printf("%s\t%s\t%d\n", $time, $stmt, $count_hash->{$time}->{$stmt});}
   }
 }
+=cut
+print Dumper($count_hash);
 
 exit 0;
 
@@ -106,6 +112,7 @@ options:
                           "s", "second",
                           "m", "minute",
                           "h", "hour"
+  --groupby=string      "time", "statement", "table", "all"
   --usage, --help, -h   Print this message.
 EOS
   exit 0;
