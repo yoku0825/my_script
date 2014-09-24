@@ -20,7 +20,11 @@
 
 use strict;
 use warnings;
+use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
 use Fcntl;
+
+GetOptions("help|usage|h" => \my $usage) or die;
+usage() if $usage;
 
 my $db;
 while (my $line= <>)
@@ -35,3 +39,21 @@ while (my $line= <>)
 }
 
 exit 0;
+
+
+sub usage
+{
+  print << "EOS";
+$0 is spliter of mysqldump's output.
+
+expample:
+  \$ mysqldump --all-databases --single-transaction | mysqldump_split.pl
+  \$ ls -l
+  .. (you get a list of each databases' dump)
+
+options:
+  --usage, --help, -h   Print this message.
+EOS
+  exit 0;
+}
+
