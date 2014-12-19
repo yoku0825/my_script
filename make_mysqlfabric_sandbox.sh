@@ -22,6 +22,8 @@
 function start
 {
   docker pull yoku0825/cent66:fabric_aware_5622
+  mysqlfabric manage setup
+  mysqlfabric manage start --daemonize
   for s in $* ; do
     mysqlfabric group create $s
     docker run -d -h $s --name $s yoku0825/cent66:fabric_aware_5622
@@ -39,8 +41,6 @@ function clear
   docker stop $(docker ps -a | grep "fabric_aware_5622" | awk '{print $1}')
   docker rm   $(docker ps -a | grep "fabric_aware_5622" | awk '{print $1}')
   mysqlfabric manage teardown
-  mysqlfabric manage setup
-  mysqlfabric manage start --daemonize
 }
 
 command="$1"
