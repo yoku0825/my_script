@@ -20,7 +20,11 @@
 
 function usage
 {
-  echo "$0 <version_string>" >&2
+  cat << EOS >&2
+usage: $0 version_string
+  ex) $0 "6.3"
+    => This makes whole new CentOS 6.3's non-tagged docker image.
+EOS
   exit 1
 }
 
