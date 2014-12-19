@@ -26,7 +26,7 @@ function start
     mysqlfabric group create $s
     docker run -d -h $s --name $s yoku0825/cent66:fabric_aware_5622
     ipaddr=$(docker inspect -f {{.NetworkSettings.IPAddress}} $s)
-    sleep 5
+    sleep 10
     mysqlfabric group add $s $ipaddr
     mysqlfabric activate $s
     mysqlfabric group promote $s
