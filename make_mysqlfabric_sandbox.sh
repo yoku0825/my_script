@@ -28,6 +28,8 @@ function start
     ipaddr=$(docker inspect -f {{.NetworkSettings.IPAddress}} $s)
     sleep 5
     mysqlfabric group add $s $ipaddr
+    mysqlfabric activate $s
+    mysqlfabric group promote $s
   done
 }
 
