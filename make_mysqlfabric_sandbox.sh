@@ -19,6 +19,12 @@
 ########################################################################
 
 
+function usage
+{
+  echo "$0 {start|clear} {group_name1 group_name2 ..}" >&2
+  exit 2
+}
+
 function start
 {
   docker pull yoku0825/cent66:fabric_aware_5622
@@ -43,13 +49,17 @@ function clear
   mysqlfabric manage teardown
 }
 
-command="$1"
-shift
+if [ "$#" -lt 1 ] ; then
+  usage
+else
+  command="$1"
+  shift
+fi
 
 if [ "$command" = "start" ] ; then
   if [ $# -lt 1 ] ; then
-    echo "Syntax Error." >&2
-    exit 1
+    echo "Group name is not specified." >&2
+    usage
   else
     start $*
   fi
@@ -57,7 +67,7 @@ elif [ "$command" = "clear" ] ; then
   clear
 else
   echo "Command $command is unsupported." >&2
-  exit 2
+  usage
 fi
 
 exit 0
