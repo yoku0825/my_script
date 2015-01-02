@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-# Copyright (C) 2014  yoku0825
+# Copyright (C) 2014, 2015  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,12 +27,12 @@ function usage
 
 function start
 {
-  docker pull yoku0825/cent66:fabric_aware_5622
+  docker pull yoku0825/mysql_fabric_aware
   mysqlfabric manage setup
   mysqlfabric manage start --daemonize
   for s in $* ; do
     mysqlfabric group create $s
-    docker run -d -h $s --name $s yoku0825/cent66:fabric_aware_5622
+    docker run -d -h $s --name $s yoku0825/mysql_fabric_aware
     ipaddr=$(docker inspect -f {{.NetworkSettings.IPAddress}} $s)
     sleep 10
     mysqlfabric group add $s $ipaddr
@@ -44,8 +44,8 @@ function start
 function clear
 {
   mysqlfabric manage stop
-  docker stop $(docker ps -a | grep "fabric_aware_5622" | awk '{print $1}')
-  docker rm   $(docker ps -a | grep "fabric_aware_5622" | awk '{print $1}')
+  docker stop $(docker ps -a | grep "mysql_fabric_aware" | awk '{print $1}')
+  docker rm   $(docker ps -a | grep "mysql_fabric_aware" | awk '{print $1}')
   mysqlfabric manage teardown
 }
 
