@@ -18,6 +18,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ########################################################################
 
+declare directory_for_copy="/tmp/docker"
+declare -a files_for_salvage=("/root/.bash_history")
+
+function salvage_from_container
+{
+  container_id="$1"
+
+  for i in ${files_for_salvage[*]} ; do
+    \docker cp $container_id:$i $directory_for_copy/$container_id
+  done
+
+  echo "salvaged: $directory_for_copy/$container_id"
+}
+
 function remove_one_container
 {
   while [ ! -z "$*" ] ; do
@@ -28,6 +42,7 @@ function remove_one_container
       \docker stop $container_id
     fi
   
+    salvage_from_container $container_id
     \docker rm $container_id
   done
 }
@@ -91,6 +106,16 @@ function start_and_attach
   \docker attach $container_id
 }
 
+function pull_dockerfile
+{
+  image_id="$1"
+
+  \docker run --name pull_dockerfile "$1" tar cf /root/setup.tar setup -C /root
+  \docker cp pull_dockerfile:/root/setup.tar $directory_for_copy/$image_id/
+  \docker rm pull_dockerfile
+  echo "outputted: $directory_for_copy/$image_id/setup.tar"
+}
+
 
 command="$1"
 shift
@@ -110,6 +135,9 @@ case "$command" in
     else
       \docker build $*
     fi
+    ;;
+  "file")
+    pull_dockerfile $1
     ;;
   "rm")
     if [ -z "$*" ] ; then
