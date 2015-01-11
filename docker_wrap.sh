@@ -110,8 +110,8 @@ function pull_dockerfile
 {
   image_id="$1"
 
-  \docker run --name pull_dockerfile "$1" tar cf /root/setup.tar setup -C /root
-  \docker cp pull_dockerfile:/root/setup.tar $directory_for_copy/$image_id/
+  \docker run --name pull_dockerfile "$1" tar cf /tmp/setup.tar -C /tmp/setup .
+  \docker cp pull_dockerfile:/tmp/setup.tar $directory_for_copy/$image_id/
   \docker rm pull_dockerfile
   echo "outputted: $directory_for_copy/$image_id/setup.tar"
 }
