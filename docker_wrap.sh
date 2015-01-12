@@ -20,6 +20,15 @@
 
 declare directory_for_copy="/tmp/docker"
 declare -a files_for_salvage=("/root/.bash_history")
+declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana" "yoku0825/private:cloudforecast" "yoku0825/private:fabric_demo")
+
+function pull_repositories
+{
+  for f in ${repositories_for_pull[*]} ; do
+    echo $f
+    \docker pull "$f"
+  done
+}
 
 function salvage_from_container
 {
@@ -138,6 +147,13 @@ case "$command" in
     ;;
   "file")
     pull_dockerfile $1
+    ;;
+  "pull")
+    if [ -z "$*" ] ; then
+      pull_repositories
+    else
+      \docker pull $*
+    fi
     ;;
   "rm")
     if [ -z "$*" ] ; then
