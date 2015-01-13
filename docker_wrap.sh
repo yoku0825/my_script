@@ -21,12 +21,19 @@
 declare directory_for_copy="/tmp/docker"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana" "yoku0825/private:cloudforecast" "yoku0825/private:fabric_demo")
+declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
-function pull_repositories
+function pull_all_repositories
 {
   for f in ${repositories_for_pull[*]} ; do
-    echo $f
     \docker pull "$f"
+  done
+}
+
+function push_all_repositories
+{
+  for f in ${repositories_for_push[*]} ; do
+    \docker push "$f"
   done
 }
 
@@ -150,9 +157,16 @@ case "$command" in
     ;;
   "pull")
     if [ -z "$*" ] ; then
-      pull_repositories
+      pull_all_repositories
     else
       \docker pull $*
+    fi
+    ;;
+  "push")
+    if [ -z "$*" ] ; then
+      push_all_repositories
+    else
+      \docker push $*
     fi
     ;;
   "rm")
