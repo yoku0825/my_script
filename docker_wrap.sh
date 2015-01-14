@@ -19,6 +19,7 @@
 ########################################################################
 
 declare directory_for_copy="/tmp/docker"
+declare directory_for_setup="/tmp/setup"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana" "yoku0825/private:cloudforecast" "yoku0825/private:fabric_demo")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
@@ -126,10 +127,39 @@ function pull_dockerfile
 {
   image_id="$1"
 
-  \docker run --name pull_dockerfile "$1" tar cf /tmp/setup.tar -C /tmp/setup .
+  \docker run --name pull_dockerfile "$1" tar cf /tmp/setup.tar -C $directory_for_setup .
   \docker cp pull_dockerfile:/tmp/setup.tar $directory_for_copy/$image_id/
   \docker rm pull_dockerfile
   echo "outputted: $directory_for_copy/$image_id/setup.tar"
+}
+
+
+function usage
+{
+  name=$(basename $0)
+  cat << EOF
+$name is wrapper script for docker.
+
+Implementated subcommands:
+  "$name bash" is same as "docker run -it bash".
+  "$name file" is picking image's $directory_for_setup.
+  "$name show" is displaying container's name, hostname, IP address, and executing.
+  "$name usage" is showing this message.
+
+Extended subcommands:
+  "$name attach" is same as "docker start && docker attach".
+  "$name build" if you don't give --tag option, adding "--tag work" automatically.
+  "$name pull" will pull repositories listed in \$repositories_for_pull, if you don't give any argument.
+  "$name push" will push repositories listed in \$repositories_for_push, if you don't give any argument.
+  "$name rm" has three extends,
+    Stopping container, if it is still running(danger).
+    Removing all containers, if you don't give any argument.
+    Copying \$files_for_salvage from container, before removing container.
+  "$name run" with -d option, displaying container's information which is same as "$name show".
+  "$name stop" will stop all containers, if you don't give any argument.
+
+These are usage of $name, type "docker help" if you need docker's usage.
+EOF
 }
 
 
@@ -201,8 +231,12 @@ case "$command" in
       \docker stop $*
     fi
     ;;
+  "usage")
+    usage
+    ;;
   *)
     \docker $command $*
     ;;
 esac
+
 
