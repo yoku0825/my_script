@@ -155,6 +155,7 @@ Extended subcommands:
     Stopping container, if it is still running(danger).
     Removing all containers, if you don't give any argument.
     Copying \$files_for_salvage from container, before removing container.
+  "$name rmi" will remove all images without tag, if you don't give any argument.
   "$name run" with -d option, displaying container's information which is same as "$name show".
   "$name stop" will stop all containers, if you don't give any argument.
 
