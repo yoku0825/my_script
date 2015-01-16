@@ -41,7 +41,7 @@ function start
       id="${s}_${n}"
       docker run -d -h $id --name $id yoku0825/mysql_fabric_aware
       ipaddr=$(docker inspect -f {{.NetworkSettings.IPAddress}} $id)
-      sleep 5
+      sleep 10
       mysqlfabric group add $s $ipaddr
     done
 
