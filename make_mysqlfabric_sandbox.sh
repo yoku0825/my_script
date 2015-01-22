@@ -30,13 +30,22 @@ function start
   docker pull yoku0825/mysql_fabric_aware
   mysqlfabric manage setup
   mysqlfabric manage start --daemonize
-  for s in $* ; do
+
+  for buf in $* ; do
+    s=$(echo $buf | awk -F, '{print $1}')
+    n=$(echo $buf | awk -F, '{print $2 ? $2 : 1}')
+
     mysqlfabric group create $s
-    docker run -d -h $s --name $s yoku0825/mysql_fabric_aware
-    ipaddr=$(docker inspect -f {{.NetworkSettings.IPAddress}} $s)
-    sleep 10
-    mysqlfabric group add $s $ipaddr
-    mysqlfabric activate $s
+
+    for n in $(seq 1 $n) ; do
+      id="${s}_${n}"
+      docker run -d -h $id --name $id yoku0825/mysql_fabric_aware
+      ipaddr=$(docker inspect -f {{.NetworkSettings.IPAddress}} $id)
+      sleep 10
+      mysqlfabric group add $s $ipaddr
+    done
+
+    mysqlfabric group activate $s
     mysqlfabric group promote $s
   done
 }
