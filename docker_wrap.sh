@@ -148,9 +148,11 @@ Implementated subcommands:
 
 Extended subcommands:
   "$name attach" is same as "docker start && docker attach".
+  "$name attach" with no argument behave to be gave container_id which is first one in docker ps -a.
   "$name build" if you don't give --tag option, adding "--tag work" automatically.
   "$name pull" will pull repositories listed in \$repositories_for_pull, if you don't give any argument.
   "$name push" will push repositories listed in \$repositories_for_push, if you don't give any argument.
+  "$name ps" adds "-a" option implecitly.
   "$name rm" has three extends,
     Stopping container, if it is still running(danger).
     Removing all containers, if you don't give any argument.
@@ -169,8 +171,12 @@ shift
 
 case "$command" in
   "attach")
-    container_id="$1"
-    start_and_attach $1
+    if [ -z "$*" ] ; then
+      container_id=$(docker ps -a | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
+    else
+      container_id="$1"
+    fi
+    start_and_attach $container_id
     ;;
   "bash")
     container_id="$1"
@@ -199,6 +205,9 @@ case "$command" in
     else
       \docker push $*
     fi
+    ;;
+  "ps")
+    \docker ps -a $*
     ;;
   "rm")
     if [ -z "$*" ] ; then
