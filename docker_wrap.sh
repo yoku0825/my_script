@@ -95,7 +95,7 @@ function remove_all_images
 function stop_all_containers
 {
   \docker ps | grep -v "^CONTAINER ID" | awk '{print $1}' | while read container_id ; do
-    \dcoker stop $container_id
+    \docker stop $container_id
   done
 }
 
