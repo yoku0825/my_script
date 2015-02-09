@@ -123,6 +123,13 @@ function start_and_attach
   \docker attach $container_id
 }
 
+function connect_via_ssh
+{
+  container_id="$1"
+
+  ssh "$(\docker inspect -f "{{.NetworkSettings.IPAddress}}" "$container_id")"
+}
+
 function pull_dockerfile
 {
   image_id="$1"
@@ -133,7 +140,6 @@ function pull_dockerfile
   echo "outputted: $directory_for_copy/$image_id/setup.tar"
 }
 
-
 function usage
 {
   name=$(basename $0)
@@ -141,6 +147,7 @@ function usage
 $name is wrapper script for docker.
 
 Implementated subcommands:
+  "$name a" is same as "$name attach", see also extended subcommand of "attach".
   "$name bash" is same as "docker run -it bash".
   "$name file" is picking image's $directory_for_setup.
   "$name show" is displaying container's name, hostname, IP address, and executing.
@@ -170,7 +177,7 @@ command="$1"
 shift
 
 case "$command" in
-  "attach")
+  "a"|"attach")
     if [ -z "$*" ] ; then
       container_id=$(docker ps -a | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
     else
@@ -233,6 +240,14 @@ case "$command" in
     ;;
   "show")
     display_all_information
+    ;;
+  "ssh")
+    if [ -z "$*" ] ; then
+      container_id=$(\docker ps | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
+    else
+      container_id="$1"
+    fi
+    connect_via_ssh $container_id
     ;;
   "stop")
     if [ -z "$*" ] ; then
