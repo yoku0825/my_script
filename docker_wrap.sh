@@ -151,6 +151,8 @@ Implementated subcommands:
   "$name bash" is same as "docker run -it bash".
   "$name file" is picking image's $directory_for_setup.
   "$name show" is displaying container's name, hostname, IP address, and executing.
+  "$name ssh" is connecting via ssh using container_id.
+  "$name ssh" with no argument behave to be gave container_id which is first one in docker ps.
   "$name usage" is showing this message.
 
 Extended subcommands:
