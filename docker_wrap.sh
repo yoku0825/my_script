@@ -155,6 +155,8 @@ Implementated subcommands:
   "$name a" is same as "$name attach", see also extended subcommand of "attach".
   "$name bash" is same as "docker run -it bash".
   "$name file" is picking image's $directory_for_setup.
+  "$name logs" is same as "docker logs -t -f --tail=10".
+  "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
   "$name show" is displaying container's name, hostname, IP address, and executing.
   "$name ssh" is connecting via ssh using container_id.
   "$name ssh" with no argument behave to be gave container_id which is first one in docker ps.
@@ -212,7 +214,7 @@ case "$command" in
     else
       container_id="$1"
     fi
-    \docker logs -f $container_id
+    \docker logs -t -f --tail=10 $container_id
     ;;
   "pull")
     if [ -z "$*" ] ; then
