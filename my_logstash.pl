@@ -41,7 +41,7 @@ foreach my $mysql_info (@ARGV)
 {
   my $dsn     = "dbi:mysql:information_schema";
   $mysql_info =~ /^(?<ident>[^\/]*)
-                   \/?
+                   \/
                    (?<user>\w+)
                    :?
                    (?<password>.*)
@@ -87,8 +87,8 @@ while ()
                                  if defined($mysql->{prev}->{$name});
     }
     $fluent->post("mysql.status", {$mysql->{ident} => {%$current_status}}) or die $fluent->strerr if $current_status;
-    sleep $interval;
   }
+  sleep $interval;
 }
 
 exit 0;
