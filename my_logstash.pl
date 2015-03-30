@@ -40,7 +40,15 @@ my $mysql_instances;
 foreach my $mysql_info (@ARGV)
 {
   my $dsn     = "dbi:mysql:information_schema";
-  $mysql_info =~ /^(?<ident>[^\/]*)\/?(?<user>\w+):?(?<password>.*)@(?<host>[\w\.\-]+):?(?<port>\d*)/;
+  $mysql_info =~ /^(?<ident>[^\/]*)
+                   \/?
+                   (?<user>\w+)
+                   :?
+                   (?<password>.*)
+                   @
+                   (?<host>[\w\.\-]+)
+                   :?
+                   (?<port>\d*)/x;
   $dsn       .= ";host=$+{host}" if $+{host};
   $dsn       .= ";port=$+{port}" if $+{port};
 
@@ -56,6 +64,7 @@ foreach my $mysql_info (@ARGV)
                                new => {}, prev => {}};
   }
 }
+exit 0 unless ($mysql_instances);
 
 my $status_sql = "SELECT lower(variable_name) AS name, variable_value AS value " .
                  "FROM global_status WHERE variable_value RLIKE '^[0-9]+\$' ORDER BY name";
