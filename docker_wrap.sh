@@ -24,6 +24,11 @@ declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
+function newest_container_id
+{
+  echo $(\docker ps | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
+}
+
 function pull_all_repositories
 {
   for f in ${repositories_for_pull[*]} ; do
@@ -59,7 +64,7 @@ function remove_one_container
       \docker stop $container_id
     fi
   
-    salvage_from_container $container_id
+    #salvage_from_container $container_id
     \docker rm $container_id
   done
 }
@@ -181,7 +186,7 @@ shift
 case "$command" in
   "a"|"attach")
     if [ -z "$*" ] ; then
-      container_id=$(docker ps -a | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
+      container_id=$(newest_container_id)
     else
       container_id="$1"
     fi
@@ -200,6 +205,14 @@ case "$command" in
     ;;
   "file")
     pull_dockerfile $1
+    ;;
+  "logs")
+    if [ -z "$*" ] ; then
+      container_id=$(newest_container_id)
+    else
+      container_id="$1"
+    fi
+    \docker logs -f $container_id
     ;;
   "pull")
     if [ -z "$*" ] ; then
@@ -245,7 +258,7 @@ case "$command" in
     ;;
   "ssh")
     if [ -z "$*" ] ; then
-      container_id=$(\docker ps | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
+      container_id=$(newest_container_id)
     else
       container_id="$1"
     fi
