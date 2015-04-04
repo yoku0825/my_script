@@ -21,7 +21,7 @@
 declare directory_for_copy="/tmp/docker"
 declare directory_for_setup="/tmp/setup"
 declare -a files_for_salvage=("/root/.bash_history")
-declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware")
+declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana4")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
 function newest_container_id
