@@ -24,9 +24,14 @@ declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana4")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
-function newest_container_id
+function newest_running_container_id
 {
   echo $(\docker ps | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
+}
+
+function newest_container_id
+{
+  echo $(\docker ps -a | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
 }
 
 function pull_all_repositories
@@ -155,6 +160,7 @@ Implementated subcommands:
   "$name a" is same as "$name attach", see also extended subcommand of "attach".
   "$name bash" is same as "docker run -it bash".
   "$name file" is picking image's $directory_for_setup.
+  "$name im" is same as "docker images".
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
   "$name show" is displaying container's name, hostname, IP address, and executing.
@@ -208,6 +214,9 @@ case "$command" in
   "file")
     pull_dockerfile $1
     ;;
+  "im")
+    \docker images $*
+    ;;
   "logs")
     if [ -z "$*" ] ; then
       container_id=$(newest_container_id)
@@ -260,7 +269,7 @@ case "$command" in
     ;;
   "ssh")
     if [ -z "$*" ] ; then
-      container_id=$(newest_container_id)
+      container_id=$(newest_running_container_id)
     else
       container_id="$1"
     fi
