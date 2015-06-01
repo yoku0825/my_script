@@ -299,7 +299,7 @@ case "$command" in
   "scp")
     source_file="$1"
     dst_container="$2"
-    if [ -z "dst_container" ] ; then
+    if [ -z "$dst_container" ] ; then
       container_id=$(newest_running_container_id)
     else
       container_id="$dst_container"
