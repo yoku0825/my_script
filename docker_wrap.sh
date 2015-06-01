@@ -275,8 +275,9 @@ case "$command" in
     ;;
   "run")
     if [[ ! "$*" =~ "--name " ]] ; then
-      container_name="--name ${@:$#}"
+      container_name="${@:$#}"
       arbitrate_container_name $container_name
+      container_name="--name $container_name"
     fi
 
     if [[ "$*" =~ "-d " ]] ; then
