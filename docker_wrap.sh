@@ -156,6 +156,14 @@ function connect_via_ssh
   ssh "$(\docker inspect -f "{{.NetworkSettings.IPAddress}}" "$container_id")"
 }
 
+function connect_via_scp
+{
+  source_file="$1"
+  dst_container="$2"
+
+  scp $source_file $(\docker inspect -f "{{.NetworkSettings.IPAddress}}" "$container_id"):~/
+}
+
 function pull_dockerfile
 {
   image_id="$1"
@@ -179,6 +187,7 @@ Implementated subcommands:
   "$name im" is same as "docker images".
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
+  "$name scp" is copying via scp using container_id, first arg is file which will be copy, second arg is container_id.
   "$name show" is displaying container's name, hostname, IP address, and executing.
   "$name ssh" is connecting via ssh using container_id.
   "$name ssh" with no argument behave to be gave container_id which is first one in docker ps.
@@ -286,6 +295,16 @@ case "$command" in
     else
       docker run $container_name $*
     fi
+    ;;
+  "scp")
+    source_file="$1"
+    dst_container="$2"
+    if [ -z "dst_container" ] ; then
+      container_id=$(newest_running_container_id)
+    else
+      container_id="$dst_container"
+    fi
+    connect_via_scp $source_file $dst_container
     ;;
   "show")
     display_all_information
