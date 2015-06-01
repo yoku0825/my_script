@@ -24,6 +24,22 @@ declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/cent66:init" "yoku0825/cent66:latest" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana4")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
+
+function arbitrate_container_name
+{
+  local container_name="$1"
+  local old_container_name="$2"
+  container_already_exists=$(\docker ps -a | awk '$NF == "'$container_name'"')
+
+  if [ ! -z "$container_already_exists" ] ; then
+    arbitrate_container_name ${container_name}1 ${container_name}
+  fi
+
+  if [ ! -z "$old_container_name" ] ; then
+    \docker rename $old_container_name $container_name
+  fi
+}
+
 function newest_running_container_id
 {
   echo $(\docker ps | grep -v "^CONTAINER ID" | head -1 | awk '{print $1}')
@@ -202,7 +218,8 @@ case "$command" in
     ;;
   "bash")
     container_id="$1"
-    \docker run -it $container_id bash
+    arbitrate_container_name "bash"
+    \docker run -it --name bash $container_id bash
     ;;
   "build")
     if [[ ! "$*" =~ --tag ]] ; then
@@ -257,11 +274,16 @@ case "$command" in
     fi
     ;;
   "run")
+    if [[ ! "$*" =~ "--name " ]] ; then
+      container_name="--name ${@:$#}"
+      arbitrate_container_name $container_name
+    fi
+
     if [[ "$*" =~ "-d " ]] ; then
-      container_id=$(docker run $*)
+      container_id=$(docker run $container_name $*)
       display_one_information $container_id
     else
-      docker run $*
+      docker run $container_name $*
     fi
     ;;
   "show")
