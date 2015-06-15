@@ -184,6 +184,7 @@ Implementated subcommands:
   "$name a" is same as "$name attach", see also extended subcommand of "attach".
   "$name bash" is same as "docker run -it bash".
   "$name file" is picking image's $directory_for_setup.
+  "$name here" is same as "docker run -d yoku0825/here".
   "$name im" is same as "docker images".
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
@@ -206,6 +207,7 @@ Extended subcommands:
     Copying \$files_for_salvage from container, before removing container.
   "$name rmi" will remove all images without tag, if you don't give any argument.
   "$name run" with -d option, displaying container's information which is same as "$name show".
+  "$name run" is always treated with --privileged.
   "$name stop" will stop all containers, if you don't give any argument.
 
 These are usage of $name, type "docker help" if you need docker's usage.
@@ -239,6 +241,10 @@ case "$command" in
     ;;
   "file")
     pull_dockerfile $1
+    ;;
+  "here")
+    arbitrate_container_name "here"
+    \docker run -d --privileged --name here yoku0825/here
     ;;
   "im")
     \docker images $*
