@@ -228,7 +228,7 @@ case "$command" in
   "bash")
     container_id="$1"
     arbitrate_container_name "bash"
-    \docker run -it --name bash $container_id bash
+    \docker run -it --privileged --name bash $container_id bash
     ;;
   "build")
     if [[ ! "$*" =~ --tag ]] ; then
@@ -290,10 +290,10 @@ case "$command" in
     fi
 
     if [[ "$*" =~ "-d " ]] ; then
-      container_id=$(docker run $container_name $*)
+      container_id=$(\docker run --privileged $container_name $*)
       display_one_information $container_id
     else
-      docker run $container_name $*
+      \docker run --privileged $container_name $*
     fi
     ;;
   "scp")
