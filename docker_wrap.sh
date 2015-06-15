@@ -244,7 +244,8 @@ case "$command" in
     ;;
   "here")
     arbitrate_container_name "here"
-    \docker run -d --privileged --name here yoku0825/here
+    container_id=$(\docker run -d --privileged --name here yoku0825/here)
+    display_one_information $container_id
     ;;
   "im")
     \docker images $*
