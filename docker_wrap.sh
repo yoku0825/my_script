@@ -21,9 +21,20 @@
 declare directory_for_copy="/tmp/docker"
 declare directory_for_setup="/tmp/setup"
 declare -a files_for_salvage=("/root/.bash_history")
-declare -a repositories_for_pull=("yoku0825/here" "yoku0825/cent66:init" "yoku0825/mysql_fabric_aware" "yoku0825/private:kibana4")
+declare -a repositories_for_pull=("yoku0825/here" \
+                                  "yoku0825/cent66:init" \
+                                  "yoku0825/mysql_fabric_aware" \
+                                  "yoku0825/private:kibana4")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
+
+function enter_into_container
+{
+  local container_name="$1"
+
+  target=$(docker inspect --format "{{.State.Pid}}" "$container_name")
+  sudo nsenter --target $target --mount --uts --ipc --net --pid bash
+}
 
 function arbitrate_container_name
 {
@@ -183,6 +194,7 @@ $name is wrapper script for docker.
 Implementated subcommands:
   "$name a" is same as "$name attach", see also extended subcommand of "attach".
   "$name bash" is same as "docker run -it bash".
+  "$name enter" executs nsenter like docker_enter.
   "$name file" is picking image's $directory_for_setup.
   "$name here" is same as "docker run -d yoku0825/here".
   "$name im" is same as "docker images".
@@ -238,6 +250,14 @@ case "$command" in
     else
       \docker build $*
     fi
+    ;;
+  "enter")
+    if [ -z "$*" ] ; then
+      container_id=$(newest_running_container_id)
+    else
+      container_id="$1"
+    fi
+    enter_into_container $container_id
     ;;
   "file")
     pull_dockerfile $1
