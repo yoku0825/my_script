@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 ########################################################################
-# Copyright (C) 2014  yoku0825
+# Copyright (C) 2014, 2015  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,13 +23,15 @@ use warnings;
 use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
 
 ### aggrigation unit. "h|hour" => per hour, "m|minute" => per minute, "s|second" => per second.
-my $cell= "m";
+my $cell    = "m";
+my $group_by= "all";
 GetOptions("cell=s"       => \$cell,
+           "group-by=s"   => \$group_by,
            "help|usage|h" => \my $usage) or die;
 usage() if $usage;
 my $header_parser= set_parser($cell);
 
-my ($time_string, $count_hash);
+my ($time_string, $count_hash, $sum);
 
 ### read from stdin.
 while (<>)
@@ -60,11 +62,41 @@ foreach my $time (sort(keys(%$count_hash)))
     foreach my $stmt qw/insert update delete replace/
     {
       if (defined($count_hash->{$time}->{$tbl}->{$stmt}))
-        {printf("%s\t%s\t%s\t%d\n", $time, $tbl, $stmt, $count_hash->{$time}->{$tbl}->{$stmt});}
+      {
+        my $val= $count_hash->{$time}->{$tbl}->{$stmt};
+        if ($group_by eq "all")
+          {printf("%s\t%s\t%s\t%d\n", $time, $tbl, $stmt, $val);}
+        $count_hash->{time_table}->{$time}->{$tbl} += $val;
+        $count_hash->{time}->{$time} += $val;
+        $count_hash->{table}->{$tbl} += $val;
+      }
     }
+
+    if ($group_by eq "time,table")
+    {
+      printf("%s\t%s\tsum\t%d\n",
+             $time, $tbl,
+             $count_hash->{time_table}->{$time}->{$tbl});
+    }
+  }
+
+  if ($group_by eq "time")
+  {
+    printf("%s\tsum\t%d\n",
+           $time, $count_hash->{time}->{$time});
   }
 }
 
+if ($group_by eq "table")
+{
+  foreach my $tbl (keys(%{$count_hash->{table}))
+  {
+    printf("%s\tsum\t%d\n",
+           $tbl, $count_hash->{table}->{$tbl});
+  }
+}
+
+  
 exit 0;
 
 
