@@ -89,7 +89,7 @@ foreach my $time (sort(keys(%$count_hash)))
 
 if ($group_by eq "table")
 {
-  foreach my $tbl (keys(%{$count_hash->{table}}))
+  foreach my $tbl (sort(keys(%{$count_hash->{table}})))
   {
     printf("%s\tsum\t%d\n",
            $tbl, $count_hash->{table}->{$tbl});
