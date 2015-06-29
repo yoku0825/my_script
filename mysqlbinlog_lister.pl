@@ -122,6 +122,11 @@ sub set_parser
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{1})\d{1}:\d{2}/;
     $format= "%s0";
   }
+  elsif ($granuality eq "10s")
+  {
+    $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{1})\d{1}/;
+    $format= "%s0";
+  }
   else # same as ($granuality eq "s" || $granuality eq "second")
   {
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{2})/;
