@@ -29,7 +29,7 @@ GetOptions("cell=s"       => \$cell,
            "group-by=s"   => \$group_by,
            "help|usage|h" => \my $usage) or die;
 usage() if $usage;
-my $header_parser= set_parser($cell);
+my ($header_parser, $print_format)= set_parser($cell);
 
 my ($time_string, $count_hash, $sum);
 
@@ -57,6 +57,7 @@ while (<>)
 ### after reading all lines, printing them all.
 foreach my $time (sort(keys(%$count_hash)))
 {
+  my $time_printable= sprintf($print_format, $time);
   foreach my $tbl (sort(keys(%{$count_hash->{$time}})))
   {
     foreach my $stmt qw/insert update delete replace/
@@ -65,7 +66,7 @@ foreach my $time (sort(keys(%$count_hash)))
       {
         my $val= $count_hash->{$time}->{$tbl}->{$stmt};
         if ($group_by eq "all")
-          {printf("%s\t%s\t%s\t%d\n", $time, $tbl, $stmt, $val);}
+          {printf("%s\t%s\t%s\t%d\n", $time_printable, $tbl, $stmt, $val);}
         $count_hash->{time_table}->{$time}->{$tbl} += $val;
         $count_hash->{time}->{$time} += $val;
         $count_hash->{table}->{$tbl} += $val;
@@ -75,7 +76,7 @@ foreach my $time (sort(keys(%$count_hash)))
     if ($group_by eq "time,table")
     {
       printf("%s\t%s\tsum\t%d\n",
-             $time, $tbl,
+             $time_printable, $tbl,
              $count_hash->{time_table}->{$time}->{$tbl});
     }
   }
@@ -83,7 +84,7 @@ foreach my $time (sort(keys(%$count_hash)))
   if ($group_by eq "time")
   {
     printf("%s\tsum\t%d\n",
-           $time, $count_hash->{time}->{$time});
+           $time_printable, $count_hash->{time}->{$time});
   }
 }
 
@@ -104,20 +105,30 @@ exit 0;
 sub set_parser
 {
   my ($granuality)= @_;
-  my $parse;
+  my ($parse, $format);
 
   if ($granuality eq "h" || $granuality eq "hour")
-    {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}):\d{2}:\d{2}/;}
+  {
+    $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}):\d{2}:\d{2}/;
+    $format= "%s:00";
+  }
   elsif ($granuality eq "m" || $granuality eq "minute" || $granuality eq "1m")
-    {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}):\d{2}/;}
+  {
+    $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}):\d{2}/;
+    $format= "%s";
+  }
   elsif ($granuality eq "10m")
-    {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{1})\d{1}:\d{2}/;}
-  elsif ($granuality eq "s" || $granuality eq "second")
-    {$parse= qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{2})/;}
-  else
-    {$parse= qr/^#(\d{2}\d{2}\d{2})\s+\d{1,2}:\d{2}:\d{2}/;}
+  {
+    $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{1})\d{1}:\d{2}/;
+    $format= "%s0";
+  }
+  else # same as ($granuality eq "s" || $granuality eq "second")
+  {
+    $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{2})/;
+    $format= "%s";
+  }
 
-  return $parse;
+  return ($parse, $format);
 }
 
 
