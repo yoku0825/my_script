@@ -28,7 +28,7 @@ use Encode;
 binmode STDIN, ":encoding(utf8)";
 
 my $query= decode("utf8", $ARGV[0]);
-$query   = "sakila" unless $query;
+$query   = "MySQL" unless $query;
 
 my $twitter_config= pit_get("twitter");
 my $slack_config  = pit_get("slack");
@@ -39,7 +39,8 @@ my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
 my $slack  = WebService::Slack::IncomingWebHook->new(
   webhook_url => $slack_config->{incoming_url});
 
-foreach my $tweet (@{$twitter->search({q => "-RT $query", lang => "ja", count => 10})->{statuses}})
+my $result= $twitter->search({q => "-RT $query", lang => "ja", count => 30});
+foreach my $tweet (@{$result->{statuses}})
 {
   if (my $url= $tweet->{entities}->{media}->[0]->{media_url})
   {
