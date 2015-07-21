@@ -28,6 +28,7 @@ use Encode;
 binmode STDIN, ":encoding(utf8)";
 
 my $query= decode("utf8", $ARGV[0]);
+$query   = "sakila" unless $query;
 
 my $twitter_config= pit_get("twitter");
 my $slack_config  = pit_get("slack");
