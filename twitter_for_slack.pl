@@ -52,3 +52,8 @@ foreach my $tweet (@{$result->{statuses}})
   }
 }
 
+$slack->post(
+  text       => "残念、$query の画像はなかった。少なくともパッと見では。\nhttps://pbs.twimg.com/profile_images/2591998236/20120301121746_126_1.jpg",
+  username   => $query,
+  icon_emoji => ":beer:");
+
