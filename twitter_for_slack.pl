@@ -28,7 +28,7 @@ use Encode;
 binmode STDIN, ":encoding(utf8)";
 
 my $query= decode("utf8", $ARGV[0]);
-$query   = "MySQL" unless $query;
+$query   = &pick_keyword unless $query;
 
 my $twitter_config= pit_get("twitter");
 my $slack_config  = pit_get("slack");
@@ -57,3 +57,14 @@ $slack->post(
   username   => $query,
   icon_emoji => ":beer:");
 
+exit 0;
+
+
+sub pick_keyword
+{
+  my @keywords= qw/鬱な気分が吹っ飛ぶ画像ください
+                   社畜ちゃん台詞メーカー
+                   いま自分がもってる意味不明な画像を晒せ
+                   飯テロ/;
+  return $keywords[int(rand($#keywords + 1))];
+}
