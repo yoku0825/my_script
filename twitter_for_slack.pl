@@ -25,10 +25,19 @@ use Net::Twitter::Lite::WithAPIv1_1;
 use WebService::Slack::IncomingWebHook;
 use utf8;
 use Encode;
-binmode STDIN, ":encoding(utf8)";
+binmode STDIN,  ":encoding(utf8)";
+binmode STDOUT, ":encoding(utf8)";
 
-my $query= decode("utf8", $ARGV[0]);
-$query   = &pick_keyword unless $query;
+my $query  = decode("utf8", $ARGV[0]);
+$query     = &pick_keyword unless $query;
+
+my $history= "." . $query . "_history";
+my $fh;
+
+open($fh, "< $history");
+my @histories= <$fh>;
+close($fh);
+open($fh, ">> $history");
 
 my $twitter_config= pit_get("twitter");
 my $slack_config  = pit_get("slack");
@@ -39,7 +48,7 @@ my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
 my $slack  = WebService::Slack::IncomingWebHook->new(
   webhook_url => $slack_config->{incoming_url});
 
-my $result= $twitter->search({q => "-RT $query", lang => "ja", count => 30});
+my $result= $twitter->search({q => "-RT $query", lang => "ja", count => 20});
 foreach my $tweet (@{$result->{statuses}})
 {
   if (my $url= $tweet->{entities}->{media}->[0]->{media_url})
@@ -47,10 +56,14 @@ foreach my $tweet (@{$result->{statuses}})
     my $original_tweet= sprintf("https://twitter.com/%s/status/%d",
                                 $tweet->{user}->{screen_name},
                                 $tweet->{id});
+    next if grep {/$original_tweet/} @histories;
+
     $slack->post(
       text       => $original_tweet,
       username   => $query,
       icon_emoji => ":sushi:");
+    print($fh $original_tweet, "\n");
+    close($fh);
     exit 0;
   }
 }
