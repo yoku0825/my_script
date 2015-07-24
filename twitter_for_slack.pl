@@ -44,8 +44,11 @@ foreach my $tweet (@{$result->{statuses}})
 {
   if (my $url= $tweet->{entities}->{media}->[0]->{media_url})
   {
+    my $original_tweet= sprintf("https://twitter.com/%s/status/%d",
+                                $tweet->{user}->{screen_name},
+                                $tweet->{id});
     $slack->post(
-      text       => $url,
+      text       => $original_tweet,
       username   => $query,
       icon_emoji => ":sushi:");
     exit 0;
