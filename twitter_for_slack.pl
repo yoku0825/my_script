@@ -34,6 +34,7 @@ $query     = &pick_keyword unless $query;
 my $history= "." . $query . "_history";
 my $fh;
 
+system("touch $history");
 open($fh, "< $history");
 my @histories= <$fh>;
 close($fh);
