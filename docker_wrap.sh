@@ -312,6 +312,7 @@ case "$command" in
   "run")
     if [[ ! "$*" =~ "--name " ]] ; then
       container_name=$(echo ${@:$#} | awk -F"[/:]" '{print $3 ? $3 : $2 ? $2 : $1}')
+      arbitrate_container_name $container_name
       container_name="--name $container_name"
     fi
 
