@@ -82,6 +82,7 @@ sub pick_keyword
   my @keywords= qw/鬱な気分が吹っ飛ぶ画像ください
                    社畜ちゃん台詞メーカー
                    いま自分がもってる意味不明な画像を晒せ
+                   from:cinnamon_sanrio
                    飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
 }
