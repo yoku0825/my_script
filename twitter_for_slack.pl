@@ -31,7 +31,7 @@ my $query= decode("utf8", $ARGV[0]);
 $query   = &pick_keyword unless $query;
 
 my $twitter_config= pit_get("twitter");
-my $slack_config  = pit_get("slack");
+my $slack_config  = pit_get("slack_nico");
 
 my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
   %$twitter_config,
@@ -39,7 +39,7 @@ my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
 my $slack  = WebService::Slack::IncomingWebHook->new(
   webhook_url => $slack_config->{incoming_url});
 
-my $result= $twitter->search({q => "-RT $query", lang => "ja", count => 30});
+my $result= $twitter->search({q => "-RT $query", lang => "ja", count => 20});
 foreach my $tweet (@{$result->{statuses}})
 {
   if (my $url= $tweet->{entities}->{media}->[0]->{media_url})
@@ -50,7 +50,7 @@ foreach my $tweet (@{$result->{statuses}})
     $slack->post(
       text       => $original_tweet,
       username   => $query,
-      icon_emoji => ":sushi:");
+      icon_emoji => ":conoha:");
     exit 0;
   }
 }
@@ -58,7 +58,7 @@ foreach my $tweet (@{$result->{statuses}})
 $slack->post(
   text       => "残念、$query の画像はなかった。少なくともパッと見では。\nhttps://pbs.twimg.com/profile_images/2591998236/20120301121746_126_1.jpg",
   username   => $query,
-  icon_emoji => ":beer:");
+  icon_emoji => ":sayaka:");
 
 exit 0;
 
@@ -68,6 +68,7 @@ sub pick_keyword
   my @keywords= qw/鬱な気分が吹っ飛ぶ画像ください
                    社畜ちゃん台詞メーカー
                    いま自分がもってる意味不明な画像を晒せ
-                   飯テロ/;
+                   飯テロ
+                   ナナピク/;
   return $keywords[int(rand($#keywords + 1))];
 }
