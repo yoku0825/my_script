@@ -25,10 +25,20 @@ use Net::Twitter::Lite::WithAPIv1_1;
 use WebService::Slack::IncomingWebHook;
 use utf8;
 use Encode;
-binmode STDIN, ":encoding(utf8)";
+binmode STDIN,  ":encoding(utf8)";
+binmode STDOUT, ":encoding(utf8)";
 
-my $query= decode("utf8", $ARGV[0]);
-$query   = &pick_keyword unless $query;
+my $query  = decode("utf8", $ARGV[0]);
+$query     = &pick_keyword unless $query;
+
+my $history= "." . $query . "_history";
+my $fh;
+
+system("touch $history");
+open($fh, "< $history");
+my @histories= <$fh>;
+close($fh);
+open($fh, ">> $history");
 
 my $twitter_config= pit_get("twitter");
 my $slack_config  = pit_get("slack_nico");
@@ -47,10 +57,14 @@ foreach my $tweet (@{$result->{statuses}})
     my $original_tweet= sprintf("https://twitter.com/%s/status/%d",
                                 $tweet->{user}->{screen_name},
                                 $tweet->{id});
+    next if grep {/$original_tweet/} @histories;
+
     $slack->post(
       text       => $original_tweet,
       username   => $query,
       icon_emoji => ":conoha:");
+    print($fh $original_tweet, "\n");
+    close($fh);
     exit 0;
   }
 }
@@ -68,7 +82,8 @@ sub pick_keyword
   my @keywords= qw/鬱な気分が吹っ飛ぶ画像ください
                    社畜ちゃん台詞メーカー
                    いま自分がもってる意味不明な画像を晒せ
-                   飯テロ
-                   ナナピク/;
+                   from:cinnamon_sanrio
+                   ナナピク
+                   飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
 }
