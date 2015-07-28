@@ -85,6 +85,7 @@ sub pick_keyword
                    #いま自分がもってる意味不明な画像を晒せ
                    from:cinnamon_sanrio
                    ナナピク
+                   #ウチ姫ファンアート
                    #飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
 }
