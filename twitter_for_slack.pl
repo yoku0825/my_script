@@ -84,7 +84,7 @@ sub pick_keyword
                    #社畜ちゃん台詞メーカー
                    #いま自分がもってる意味不明な画像を晒せ
                    from:cinnamon_sanrio
-                   ナナピク
+                   #ナナピク
                    #ウチ姫ファンアート
                    #飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
