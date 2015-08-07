@@ -87,6 +87,7 @@ sub pick_keyword
                    from:cinnamon_sanrio
                    #ナナピク
                    #ウチ姫ファンアート
+                   from:matumoto_izumi
                    #飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
 }
