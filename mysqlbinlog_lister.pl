@@ -23,8 +23,8 @@ use warnings;
 use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
 
 ### aggrigation unit. "h|hour" => per hour, "m|minute" => per minute, "s|second" => per second.
-my $cell    = "m";
-my $group_by= "all";
+my $cell    = "10m";
+my $group_by= "time";
 GetOptions("cell=s"       => \$cell,
            "group-by=s"   => \$group_by,
            "help|usage|h" => \my $usage) or die;
@@ -157,13 +157,14 @@ expample:
   ..
 
 options:
-  --cell=string         Unit of aggregation.
+  --cell=string         Unit of aggregation. [default: 10m]
                         Currentry supported are,
                           "s", "second",
                           "m", "minute", "1m",
                           "10m", 
                           "h", "hour"
-  --groupby=string      "time", "time,table", "table", "all"
+  --group-by=string     Part of aggregation. [default: time]
+                          "time", "time,table", "table", "all"
   --usage, --help, -h   Print this message.
 EOS
   exit 0;
