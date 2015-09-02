@@ -25,13 +25,14 @@ use Net::Twitter::Lite::WithAPIv1_1;
 use WebService::Slack::IncomingWebHook;
 use utf8;
 use Encode;
+use FindBin qw/$Bin/;
 binmode STDIN,  ":encoding(utf8)";
 binmode STDOUT, ":encoding(utf8)";
 
 my $query  = decode("utf8", $ARGV[0]);
 $query     = &pick_keyword unless $query;
 
-my $history= "." . $query . "_history";
+my $history= "$Bin/." . $query . "_history";
 my $fh;
 
 system("touch $history");
