@@ -50,7 +50,7 @@ my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
 my $slack  = WebService::Slack::IncomingWebHook->new(
   webhook_url => $slack_config->{incoming_url});
 
-my $result= $twitter->search({q => "-RT $query", lang => "ja", count => 20});
+my $result= $twitter->search({q => "$query", lang => "ja", count => 20});
 foreach my $tweet (@{$result->{statuses}})
 {
   if (my $url= $tweet->{entities}->{media}->[0]->{media_url})
