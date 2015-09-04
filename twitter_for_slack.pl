@@ -59,6 +59,7 @@ foreach my $tweet (@{$result->{statuses}})
                                 $tweet->{user}->{screen_name},
                                 $tweet->{id});
     next if grep {/$original_tweet/} @histories;
+    next if $tweet->{source} =~ /twittbot\.net/;
 
     $slack->post(
       text       => $original_tweet,
