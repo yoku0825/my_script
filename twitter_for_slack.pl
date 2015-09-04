@@ -55,9 +55,21 @@ foreach my $tweet (@{$result->{statuses}})
 {
   if (my $url= $tweet->{entities}->{media}->[0]->{media_url})
   {
-    my $original_tweet= sprintf("https://twitter.com/%s/status/%d",
-                                $tweet->{user}->{screen_name},
-                                $tweet->{id});
+    my $original_tweet;
+
+    if ($tweet->{retweeted_status})
+    {
+      $original_tweet= sprintf("https://twitter.com/%s/status/%d",
+                               $tweet->{retweeted_status}->{user}->{screen_name},
+                               $tweet->{retweeted_status}->{id});
+    }
+    else
+    {
+      $original_tweet= sprintf("https://twitter.com/%s/status/%d",
+                               $tweet->{user}->{screen_name},
+                               $tweet->{id});
+    }
+
     next if grep {/$original_tweet/} @histories;
     next if $tweet->{source} =~ /twittbot\.net/;
 
