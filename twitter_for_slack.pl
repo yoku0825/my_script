@@ -59,24 +59,23 @@ foreach my $tweet (@{$result->{statuses}})
 
     if ($tweet->{retweeted_status})
     {
-      $original_tweet= sprintf("https://twitter.com/%s/status/%d",
-                               $tweet->{retweeted_status}->{user}->{screen_name},
-                               $tweet->{retweeted_status}->{id});
+      $original_tweet= $tweet->{retweeted_status};
     }
     else
     {
-      $original_tweet= sprintf("https://twitter.com/%s/status/%d",
-                               $tweet->{user}->{screen_name},
-                               $tweet->{id});
+      $original_tweet= $tweet;
     }
 
-    next if grep {/$original_tweet/} @histories;
+    my $tweet_url= sprintf("https://twitter.com/%s/status/%d",
+                           $original_tweet->{user}->{screen_name},
+                           $original_tweet->{id});
+    next if grep {/$tweet_url/} @histories;
     next if $tweet->{source} =~ /twittbot\.net/;
 
     $slack->post(
-      text       => $original_tweet,
+      text       => $tweet_url,
       username   => $query);
-    print($fh $original_tweet, "\n");
+    print($fh $tweet_url, "\n");
     close($fh);
     exit 0;
   }
