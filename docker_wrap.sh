@@ -24,7 +24,8 @@ declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
                                   "yoku0825/cent66:init" \
                                   "yoku0825/mysql_fabric_aware" \
-                                  "yoku0825/private:kibana4")
+                                  "yoku0825/private:kibana4" \
+                                  "yoku0825/private:redash")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
 
