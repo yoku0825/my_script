@@ -42,7 +42,7 @@ close($fh);
 open($fh, ">> $history");
 
 my $twitter_config= pit_get("twitter");
-my $slack_config  = pit_get("slack_nico");
+my $slack_config  = pit_get("slack");
 
 my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
   %$twitter_config,
@@ -75,8 +75,7 @@ foreach my $tweet (@{$result->{statuses}})
 
     $slack->post(
       text       => $original_tweet,
-      username   => $query,
-      icon_emoji => ":conoha:");
+      username   => $query);
     print($fh $original_tweet, "\n");
     close($fh);
     exit 0;
@@ -84,9 +83,8 @@ foreach my $tweet (@{$result->{statuses}})
 }
 
 $slack->post(
-  text       => "残念、$query の画像はなかった。少なくともパッと見では。\nhttps://pbs.twimg.com/profile_images/2591998236/20120301121746_126_1.jpg",
-  username   => $query,
-  icon_emoji => ":sayaka:");
+  text       => "残念、$query の画像はなかった。少なくともパッと見では。",
+  username   => $query);
 close($fh);
 
 exit 0;
@@ -98,10 +96,6 @@ sub pick_keyword
   my @keywords= qw/#鬱な気分が吹っ飛ぶ画像ください
                    #社畜ちゃん台詞メーカー
                    #いま自分がもってる意味不明な画像を晒せ
-                   from:cinnamon_sanrio
-                   #ナナピク
-                   #ウチ姫ファンアート
-                   from:matumoto_izumi
                    #飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
 }
