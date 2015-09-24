@@ -42,7 +42,7 @@ close($fh);
 open($fh, ">> $history");
 
 my $twitter_config= pit_get("twitter");
-my $slack_config  = pit_get("slack_nico");
+my $slack_config  = pit_get("slack");
 
 my $twitter= Net::Twitter::Lite::WithAPIv1_1->new(
   %$twitter_config,
@@ -59,34 +59,31 @@ foreach my $tweet (@{$result->{statuses}})
 
     if ($tweet->{retweeted_status})
     {
-      $original_tweet= sprintf("https://twitter.com/%s/status/%d",
-                               $tweet->{retweeted_status}->{user}->{screen_name},
-                               $tweet->{retweeted_status}->{id});
+      $original_tweet= $tweet->{retweeted_status};
     }
     else
     {
-      $original_tweet= sprintf("https://twitter.com/%s/status/%d",
-                               $tweet->{user}->{screen_name},
-                               $tweet->{id});
+      $original_tweet= $tweet;
     }
 
-    next if grep {/$original_tweet/} @histories;
+    my $tweet_url= sprintf("https://twitter.com/%s/status/%d",
+                           $original_tweet->{user}->{screen_name},
+                           $original_tweet->{id});
+    next if grep {/$tweet_url/} @histories;
     next if $tweet->{source} =~ /twittbot\.net/;
 
     $slack->post(
-      text       => $original_tweet,
-      username   => $query,
-      icon_emoji => ":conoha:");
-    print($fh $original_tweet, "\n");
+      text       => $tweet_url,
+      username   => $query);
+    print($fh $tweet_url, "\n");
     close($fh);
     exit 0;
   }
 }
 
 $slack->post(
-  text       => "残念、$query の画像はなかった。少なくともパッと見では。\nhttps://pbs.twimg.com/profile_images/2591998236/20120301121746_126_1.jpg",
-  username   => $query,
-  icon_emoji => ":sayaka:");
+  text       => "残念、$query の画像はなかった。少なくともパッと見では。",
+  username   => $query);
 close($fh);
 
 exit 0;
@@ -98,10 +95,6 @@ sub pick_keyword
   my @keywords= qw/#鬱な気分が吹っ飛ぶ画像ください
                    #社畜ちゃん台詞メーカー
                    #いま自分がもってる意味不明な画像を晒せ
-                   from:cinnamon_sanrio
-                   #ナナピク
-                   #ウチ姫ファンアート
-                   from:matumoto_izumi
                    #飯テロ/;
   return $keywords[int(rand($#keywords + 1))];
 }
