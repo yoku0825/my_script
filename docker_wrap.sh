@@ -104,7 +104,7 @@ function remove_one_container
 
 function remove_all_containers
 {
-  \docker ps -a | grep -v "^CONTAINER ID" | awk '{print $1}' | while read container_id ; do
+  \docker ps -a | grep -v "^CONTAINER ID" | awk '/Exited/{print $1}' | while read container_id ; do
     remove_one_container $container_id
   done
 }
@@ -215,7 +215,6 @@ Extended subcommands:
   "$name push" will push repositories listed in \$repositories_for_push, if you don't give any argument.
   "$name ps" adds "-a" option implecitly.
   "$name rm" has three extends,
-    Stopping container, if it is still running(danger).
     Removing all containers, if you don't give any argument.
     Copying \$files_for_salvage from container, before removing container.
   "$name rmi" will remove all images without tag, if you don't give any argument.
