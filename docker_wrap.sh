@@ -199,6 +199,7 @@ Implementated subcommands:
   "$name file" is picking image's $directory_for_setup.
   "$name here" is same as "docker run -d yoku0825/here".
   "$name im" is same as "docker images".
+  "$name init" is same as "docker run -it bash yoku0825/cent66:init"
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
   "$name scp" is copying via scp using container_id, first arg is file which will be copy, second arg is container_id.
@@ -215,7 +216,7 @@ Extended subcommands:
   "$name push" will push repositories listed in \$repositories_for_push, if you don't give any argument.
   "$name ps" adds "-a" option implecitly.
   "$name rm" has three extends,
-    Removing all containers, if you don't give any argument.
+    Removing all stopping(not running) containers, if you don't give any argument.
     Copying \$files_for_salvage from container, before removing container.
   "$name rmi" will remove all images without tag, if you don't give any argument.
   "$name run" with -d option, displaying container's information which is same as "$name show".
@@ -269,6 +270,9 @@ case "$command" in
     ;;
   "im")
     \docker images $*
+    ;;
+  "init")
+    $0 bash yoku0825/cent66:init
     ;;
   "logs")
     if [ -z "$*" ] ; then
