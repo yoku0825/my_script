@@ -109,6 +109,13 @@ function remove_all_containers
   done
 }
 
+function remove_force_all_containers
+{
+  \docker ps -a | grep -v "^CONTAINER ID" | awk '{print $1}' | while read container_id ; do
+    remove_one_container $container_id
+  done
+}
+
 function remove_one_image
 {
   while [ ! -z "$*" ] ; do
@@ -305,6 +312,9 @@ case "$command" in
     else
       remove_one_container $*
     fi
+    ;;
+  "rmf")
+    remove_force_all_containers
     ;;
   "rmi")
     if [ -z "$*" ] ; then
