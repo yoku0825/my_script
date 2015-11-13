@@ -20,10 +20,10 @@
 
 declare directory_for_copy="/tmp/docker"
 declare directory_for_setup="/tmp/setup"
+declare not_remove_image="yoku0825/private:redash"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
                                   "yoku0825/cent66:init" \
-                                  "yoku0825/mysql_fabric_aware" \
                                   "yoku0825/private:kibana4" \
                                   "yoku0825/private:redash")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
@@ -111,7 +111,7 @@ function remove_all_containers
 
 function remove_force_all_containers
 {
-  \docker ps -a | grep -v "^CONTAINER ID" | awk '{print $1}' | while read container_id ; do
+  \docker ps -a | grep -v "^CONTAINER ID" | grep -v "$not_remove_image" | awk '{print $1}' | while read container_id ; do
     remove_one_container $container_id
   done
 }
