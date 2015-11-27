@@ -20,7 +20,7 @@
 
 declare directory_for_copy="/tmp/docker"
 declare directory_for_setup="/tmp/setup"
-declare not_remove_image="yoku0825/private:redash|yoku0825/private:nico-docker"
+declare not_remove_image="yoku0825/private:redash|yoku0825/private:nico-docker|f99aq8ove/gitbucket"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
                                   "yoku0825/cent66:init" \
