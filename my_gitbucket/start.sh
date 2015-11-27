@@ -1,1 +1,1 @@
-docker run -d -p 50088:8080 -p 52200:52200 -v ${PWD}/data:/gitbucket --name=gitbucket f99aq8ove/gitbucket
+docker run -d -p 8080:8080 -p 29418:29418 -v ${PWD}/data:/gitbucket --name=gitbucket f99aq8ove/gitbucket
