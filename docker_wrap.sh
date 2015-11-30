@@ -23,9 +23,9 @@ declare directory_for_setup="/tmp/setup"
 declare not_remove_image="yoku0825/private:redash|yoku0825/private:nico-docker|f99aq8ove/gitbucket"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
-                                  "yoku0825/cent66:init" \
                                   "yoku0825/private:kibana4" \
-                                  "yoku0825/private:redash")
+                                  "yoku0825/private:redash" \
+                                  "yoku0825/private:nico-docker")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
 
@@ -206,7 +206,7 @@ Implementated subcommands:
   "$name file" is picking image's $directory_for_setup.
   "$name here" is same as "docker run -d yoku0825/here".
   "$name im" is same as "docker images".
-  "$name init" is same as "docker run -it bash yoku0825/cent66:init"
+  "$name init" is same as "docker run -it bash centos:centos6.6"
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
   "$name scp" is copying via scp using container_id, first arg is file which will be copy, second arg is container_id.
@@ -279,7 +279,7 @@ case "$command" in
     \docker images $*
     ;;
   "init")
-    $0 bash yoku0825/cent66:init
+    $0 bash centos:centos6.6
     ;;
   "logs")
     if [ -z "$*" ] ; then
