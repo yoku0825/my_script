@@ -24,10 +24,10 @@ use DBI;
 use Fluent::Logger;
 use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 
-GetOptions("S|socket=s" => \my $socket,
-           "h|host=s"   => \my $host,
-           "P|port=i"   => \my $port,
-           "i|interval=i" => \my $interval) or die;
+GetOptions("socket=s" => \my $socket,
+           "host=s"   => \my $host,
+           "port=i"   => \my $port,
+           "interval=i" => \my $interval) or die;
 my %fluent_opt;
 $fluent_opt{socket}= $socket if $socket;
 $fluent_opt{host}  = $host   if $host;
@@ -67,9 +67,7 @@ foreach my $mysql_info (@ARGV)
 exit 0 unless ($mysql_instances);
 
 my $status_sql = "SELECT lower(variable_name) AS name, variable_value AS value " .
-                 "FROM global_status WHERE variable_value RLIKE '^[0-9]+\$' ORDER BY name";
-my $process_sql= "SELECT id, user, host, db, command, time, state, info " .
-                 "FROM processlist";
+                 "FROM sys.metrics WHERE enabled= 'YES' AND variable_value RLIKE '^[0-9]+\$' ORDER BY name";
 
 while ()
 {
