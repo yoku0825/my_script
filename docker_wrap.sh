@@ -29,6 +29,24 @@ declare -a repositories_for_pull=("yoku0825/here" \
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
 
+function print_template
+{
+  set -C
+  cat << EOF > Dockerfile
+FROM centos:centos6.6
+MAINTAINER yoku0825
+WORKDIR /root
+
+RUN yum install -y git
+RUN test -d /tmp/setup || mkdir /tmp/setup
+RUN git clone https://github.com/yoku0825/init_script.git /tmp/setup/init_script.git
+RUN bash /tmp/setup/init_script.git/docker/docker_basic.sh
+EOF
+
+  [ "$?" = "0" ] && cat Dockerfile
+}
+
+
 function enter_into_container
 {
   local container_name="$1"
@@ -213,6 +231,7 @@ Implementated subcommands:
   "$name show" is displaying container's name, hostname, IP address, and executing.
   "$name ssh" is connecting via ssh using container_id.
   "$name ssh" with no argument behave to be gave container_id which is first one in docker ps.
+  "$name template" makes Dockerfile into current directory. (This raises error when "./Dockerfile" is already there)
   "$name usage" is showing this message.
 
 Extended subcommands:
@@ -364,6 +383,9 @@ case "$command" in
     else
       \docker stop $*
     fi
+    ;;
+  "template")
+    print_template
     ;;
   "usage")
     usage
