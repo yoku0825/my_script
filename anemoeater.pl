@@ -28,9 +28,10 @@ use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 
 my $opt= {parallel => 1,
           since    => 0,
-          until    => 999912312359};
+          until    => 999912312359,
+          report   => 0};
 GetOptions($opt, qw/socket=s host=s port=i user=s password=s
-                    parallel=i since=s until=s/) or die;
+                    parallel=i since=s until=s report=i/) or die;
 
 my $pt_dsn= "D=slow_query_log";
 $pt_dsn  .= sprintf(",h=%s", $opt->{host})     if $opt->{host};
@@ -45,7 +46,7 @@ my $pm  = Parallel::ForkManager->new($opt->{parallel});
 my $file= $ARGV[0];
 open(my $in, "<", $file);
 
-my $n= 0;
+my $event  = 0;
 my $time   = 0;
 my $timetmp= 0;
 my @buffer = ();
@@ -103,7 +104,8 @@ exit 0;
 sub usage
 {
   print << "EOF";
-$0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s] [--parallel=i] [--since=i] [--until=i] path_to_slowlog
+$0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s]
+   [--parallel=i] [--since=i] [--until=i] [--report=i] path_to_slowlog
   $0 is split slowlog and process by pt-query-digest.
 
   --user=s     MySQL user which pt-query-digest uses to connection.
@@ -114,12 +116,15 @@ $0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s] [--parallel=i] [
   --parallel=i How many processes does script run concurrently.
   --since=i    Filter for processing slow-log, YYYYMMDDHHNN style only.
   --until=i    Filter for processing slow-log, YYYYMMDDHHNN style only.
+  --report=i   Print message each processed events n times.
 EOF
 }
 
 
 sub send_pt_qd
 {
+  printf("processing %dth event.\n", $event) if ($opt->{report} && (++$event % $opt->{report}) == 0);
+
   unless ($pm->start)
   {
     open(my $process, sprintf($cmd_format,
