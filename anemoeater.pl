@@ -22,7 +22,6 @@ use strict;
 use warnings;
 use utf8;
 
-use DBI;
 use Parallel::ForkManager;
 use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 
@@ -33,12 +32,6 @@ my $opt= {parallel => 1,
           docker   => 0};
 GetOptions($opt, qw/socket=s host=s port=i user=s password=s
                     parallel=i since=s until=s report=i docker/) or die;
-
-my $pt_dsn= "D=slow_query_log";
-$pt_dsn  .= sprintf(",h=%s", $opt->{host})     if $opt->{host};
-$pt_dsn  .= sprintf(",P=%d", $opt->{port})     if $opt->{port};
-$pt_dsn  .= sprintf(",u=%s", $opt->{user})     if $opt->{user};
-$pt_dsn  .= sprintf(",p=%s", $opt->{password}) if $opt->{password};
 
 ### Starting docker container.
 if ($opt->{docker})
@@ -57,6 +50,12 @@ if ($opt->{docker})
   $opt->{password}= undef;
   $opt->{port}    = undef;
 }
+
+my $pt_dsn= "D=slow_query_log";
+$pt_dsn  .= sprintf(",h=%s", $opt->{host})     if $opt->{host};
+$pt_dsn  .= sprintf(",P=%d", $opt->{port})     if $opt->{port};
+$pt_dsn  .= sprintf(",u=%s", $opt->{user})     if $opt->{user};
+$pt_dsn  .= sprintf(",p=%s", $opt->{password}) if $opt->{password};
 
 my $cmd_format= qq{| pt-query-digest --no-version-check --review %s --history %s --no-report --limit=0%% --filter="\\\$event->{Bytes} = length(\\\$event->{arg}) and \\\$event->{hostname}='%s'"};
 
