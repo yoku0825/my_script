@@ -69,7 +69,7 @@ $pt_dsn  .= sprintf(",P=%d", $opt->{port})     if $opt->{port};
 $pt_dsn  .= sprintf(",u=%s", $opt->{user})     if $opt->{user};
 $pt_dsn  .= sprintf(",p=%s", $opt->{password}) if $opt->{password};
 
-my $cmd_format= qq{| pt-query-digest --no-version-check --review %s --history %s --no-report --limit=0%% --filter="\\\$event->{Bytes} = length(\\\$event->{arg}) and \\\$event->{hostname}='%s' > /dev/null"};
+my $cmd_format= qq{| pt-query-digest --no-version-check --review %s --history %s --no-report --limit=0%% --filter="\\\$event->{Bytes} = length(\\\$event->{arg}) and \\\$event->{hostname}='%s'"};
 
 my $pm  = Parallel::ForkManager->new($opt->{parallel});
 my $file= $ARGV[0];
