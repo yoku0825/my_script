@@ -23,10 +23,14 @@ use warnings;
 use utf8;
 
 use DBI;
+use Parallel::ForkManager;
 use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 
-my $opt= {};
-GetOptions($opt, qw/socket=s host=s port=i user=s password=s/) or die;
+my $opt= {parallel => 1,
+          since    => 0,
+          until    => 999912312359};
+GetOptions($opt, qw/socket=s host=s port=i user=s password=s
+                    parallel=i since=s until=s/) or die;
 
 my $pt_dsn= "D=slow_query_log";
 $pt_dsn  .= sprintf(",h=%s", $opt->{host})     if $opt->{host};
@@ -41,31 +45,61 @@ my $cmd=  sprintf($cmd_format,
                   $pt_dsn . ",t=global_query_review_history",
                   $ENV{HOSTNAME});
 
+my $pm  = Parallel::ForkManager->new($opt->{parallel});
 my $file= $ARGV[0];
 open(my $in, "<", $file);
 
-my ($time, @buffer);
+my $n= 0;
+my $time   = 0;
+my $timetmp= 0;
+my @buffer = ();
 while (<$in>)
 {
-  if (/^# Time:/)
+  if (/^# Time: (?<timestr>.+)$/)
   {
-    if ($time)
+    if ($+{timestr} =~ /(?<year>\d{2})(?<month>\d{2})(?<day>\d{2})\s+
+                        (?<hour>\d{1,2}):(?<minute>\d{2}):(?<second>\d{2})/x)
     {
-      open(my $process, sprintf($cmd_format,
-                                $pt_dsn . ",t=global_query_review",
-                                $pt_dsn . ",t=global_query_review_history",
-                                $ENV{HOSTNAME}));
-      print $process @buffer;
-      close($process);
+      ### 5.0, 5.1, 5.5, 5.6 style.
+      # "# Time: %02d%02d%02d %2d:%02d:%02d\n",
 
-      $time  = 0;
+      ### normalize without seconds.
+      $timetmp= sprintf("20%02d%02d%02d%02d%02d",
+                        $+{year}, $+{month}, $+{day},
+                        $+{hour}, $+{minute});
+    }
+    elsif ($+{timestr} =~ /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T
+                           (?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2})\.
+                           (?<fraction>\d{6})(?<timezone>.*)/x)
+    {
+      ### 5.7 style.
+      # "%04d-%02d-%02dT%02d:%02d:%02d.%06lu%s",
+ 
+      ### normalize without seconds.
+      $timetmp= sprintf("%04d%02d%02d%02d%02d",
+                        $+{year}, $+{month}, $+{day},
+                        $+{hour}, $+{minute});
+    }
+    else
+    {
+      ### Unknown format.
+      $timetmp= 0;
+    }
+
+    if ($timetmp != $time)
+    {
+      &send_pt_qd if ($opt->{since} <= $time && $time <= $opt->{until});
+      $time= $timetmp;
       @buffer= ();
     }
   }
-
-  $time= 1;
   push(@buffer, $_);
 }
+
+### flush last block.
+&send_pt_qd if (@buffer && $opt->{since} <= $time && $time <= $opt->{until});
+
+$pm->wait_all_children;
 
 exit 0;
 
@@ -73,9 +107,31 @@ exit 0;
 sub usage
 {
   print << "EOF";
-$0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s] path_to_slowlog
-
+$0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s] [--parallel=i] [--since=i] [--until=i] path_to_slowlog
   $0 is split slowlog and process by pt-query-digest.
-  pt-query-digest's output will send to MySQL which is specified by options.
+
+  --user=s     MySQL user which pt-query-digest uses to connection.
+  --password=s MySQL password which pt-query-digest uses to connection.
+  --port=i     MySQL port which pt-query-digest uses to connection.
+  --host=s     MySQL host which pt-query-digest uses to connection.
+  --socket=s   MySQL socket which pt-query-digest uses to connection.
+  --parallel=i How many processes does script run concurrently.
+  --since=i    Filter for processing slow-log, YYYYMMDDHHNN style only.
+  --until=i    Filter for processing slow-log, YYYYMMDDHHNN style only.
 EOF
 }
+
+
+sub send_pt_qd
+{
+  unless ($pm->start)
+  {
+    open(my $process, sprintf($cmd_format,
+                              $pt_dsn . ",t=global_query_review",
+                              $pt_dsn . ",t=global_query_review_history",
+                              $ENV{HOSTNAME}));
+    print $process @buffer;
+    close($process);
+    $pm->finish;
+  }
+} 
