@@ -43,6 +43,9 @@ if ($opt->{docker})
   my $container_ipaddr= `sudo docker inspect -f '{{.NetworkSettings.IPAddress}}' $container_id`;
   chomp($container_ipaddr);
 
+  my $publish_port= `sudo docker inspect $container_id | awk '/HostPort/{print \$2}' | tr -d \\"`;
+  chomp($publish_port);
+
   ### wait container's mysqld starts to run
   while ()
   {
@@ -61,6 +64,9 @@ if ($opt->{docker})
   $opt->{user}    = "anemometer";
   $opt->{password}= undef;
   $opt->{port}    = undef;
+
+  printf("Docker container starts with $container_ipaddr.\n");
+  printf("URL will be http://$ENV{HOSTNAME}:$publish_port/anemometer\n");
 }
 
 my $pt_dsn= "D=slow_query_log";
