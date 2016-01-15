@@ -22,6 +22,7 @@ use strict;
 use warnings;
 use utf8;
 
+use DBI;
 use Parallel::ForkManager;
 use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 
@@ -43,7 +44,18 @@ if ($opt->{docker})
   chomp($container_ipaddr);
 
   ### wait container's mysqld starts to run
-  sleep 3;
+  while ()
+  {
+    eval
+    {
+      my $conn= DBI->connect("dbi:mysql:;host=$container_ipaddr", "anemometer", "",
+                             {RaiseError => 1, PrintError => 0});
+      $conn->do("SELECT CURRENT_USER()");
+    };
+
+    last unless $@;
+    sleep 3;
+  }
 
   $opt->{host}    = $container_ipaddr;
   $opt->{user}    = "anemometer";
