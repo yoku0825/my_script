@@ -227,7 +227,7 @@ Implementated subcommands:
   "$name init" is same as "docker run -it bash centos:centos6.6"
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
-  "$name rmf" will removing all containers exept of \$not_remove_image, even if they are running. 
+  "$name rmf" will removing all containers except of \$not_remove_image, even if they are running. 
   "$name scp" is copying via scp using container_id, first arg is file which will be copy, second arg is container_id.
   "$name show" is displaying container's name, hostname, IP address, and executing.
   "$name ssh" is connecting via ssh using container_id.
@@ -248,7 +248,7 @@ Extended subcommands:
   "$name rmi" will remove all images without tag, if you don't give any argument.
   "$name run" with -d option, displaying container's information which is same as "$name show".
   "$name run" is always treated with --privileged.
-  "$name stop" will stop all containers, if you don't give any argument.
+  "$name stop" will stop all containers except of \$not_remove_image, if you don't give any argument.
 
 These are usage of $name, type "docker help" if you need docker's usage.
 EOF
