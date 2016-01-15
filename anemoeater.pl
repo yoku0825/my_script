@@ -39,11 +39,7 @@ $pt_dsn  .= sprintf(",u=%s", $opt->{user})     if $opt->{user};
 $pt_dsn  .= sprintf(",p=%s", $opt->{password}) if $opt->{password};
 
 
-my $cmd_format= qq{| pt-query-digest --review %s --history %s --no-report --limit=0%% --filter="\\\$event->{Bytes} = length(\\\$event->{arg}) and \\\$event->{hostname}='%s'"};
-my $cmd=  sprintf($cmd_format,
-                  $pt_dsn . ",t=global_query_review",
-                  $pt_dsn . ",t=global_query_review_history",
-                  $ENV{HOSTNAME});
+my $cmd_format= qq{| pt-query-digest --no-version-check --review %s --history %s --no-report --limit=0%% --filter="\\\$event->{Bytes} = length(\\\$event->{arg}) and \\\$event->{hostname}='%s'"};
 
 my $pm  = Parallel::ForkManager->new($opt->{parallel});
 my $file= $ARGV[0];
