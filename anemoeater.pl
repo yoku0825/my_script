@@ -122,7 +122,7 @@ sub usage
 {
   print << "EOF";
 $0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s]
-   [--parallel=i] [--since=i] [--until=i] [--report=i] path_to_slowlog
+   [--parallel=i] [--since=i] [--until=i] [--report=i] [--docker] path_to_slowlog
   $0 is split slowlog and process by pt-query-digest.
 
   --user=s     MySQL user which pt-query-digest uses to connection.
@@ -134,6 +134,7 @@ $0 [--user=s] [--password=s] [--port=i] [--host=s] [--socket=s]
   --since=i    Filter for processing slow-log, YYYYMMDDHHNN style only.
   --until=i    Filter for processing slow-log, YYYYMMDDHHNN style only.
   --report=i   Print message each processed events n times.
+  --docker     Using docker container (yoku0825/anemometer)
 EOF
 }
 
