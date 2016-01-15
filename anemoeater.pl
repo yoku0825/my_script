@@ -29,9 +29,10 @@ use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 my $opt= {parallel => 1,
           since    => 0,
           until    => 999912312359,
-          report   => 0};
+          report   => 0,
+          docker   => 0};
 GetOptions($opt, qw/socket=s host=s port=i user=s password=s
-                    parallel=i since=s until=s report=i/) or die;
+                    parallel=i since=s until=s report=i docker/) or die;
 
 my $pt_dsn= "D=slow_query_log";
 $pt_dsn  .= sprintf(",h=%s", $opt->{host})     if $opt->{host};
@@ -39,6 +40,23 @@ $pt_dsn  .= sprintf(",P=%d", $opt->{port})     if $opt->{port};
 $pt_dsn  .= sprintf(",u=%s", $opt->{user})     if $opt->{user};
 $pt_dsn  .= sprintf(",p=%s", $opt->{password}) if $opt->{password};
 
+### Starting docker container.
+if ($opt->{docker})
+{
+  my $container_id= `sudo docker run -d -P yoku0825/anemometer`;
+  chomp($container_id);
+
+  my $container_ipaddr= `sudo docker inspect -f '{{.NetworkSettings.IPAddress}}' $container_id`;
+  chomp($container_ipaddr);
+
+  ### wait container's mysqld starts to run
+  sleep 3;
+
+  $opt->{host}    = $container_ipaddr;
+  $opt->{user}    = "anemometer";
+  $opt->{password}= undef;
+  $opt->{port}    = undef;
+}
 
 my $cmd_format= qq{| pt-query-digest --no-version-check --review %s --history %s --no-report --limit=0%% --filter="\\\$event->{Bytes} = length(\\\$event->{arg}) and \\\$event->{hostname}='%s'"};
 
