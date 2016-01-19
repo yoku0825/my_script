@@ -29,7 +29,7 @@ foreach (qw/a b c ac d cd/)
   $block->node($_, {param => {color => "blue", textcolor => "white"}});
 }
 
-$block->edge({start => "ac", end => "d", param => {color => "red"}});
+my $edge= $block->edge("ac", "d", {param => {color => "red"}});
 $block->nodes->{a}->add_edge("zzzz", {color => "rrr"});
 
 my $n= $block->node("n", {color => "green"});
@@ -40,6 +40,7 @@ my $group= $block->group("mygroup", {member => [$n, $dq]});
 
 $group->add("q");
 $group->param({label => "test_group"});
+$group->add($edge);
 
 $block->print;
 
@@ -84,15 +85,13 @@ sub node
 
 sub edge
 {
-  my ($self, $opt)= @_;
-  my $start= $opt->{start};
-  my $end  = $opt->{end};
+  my ($self, $start, $end, $opt)= @_;
 
   croak("Edge between $start and $end is already defined.") if defined($self->edges->{$start => $end});
   $self->node($start) unless ref($self->nodes->{$start}) eq "BlockDiag::Node";
   $self->node($end)   unless ref($self->nodes->{$end}) eq "BlockDiag::Node";
 
-  $self->edges->{$start => $end}= BlockDiag::Edge->new($opt);
+  $self->edges->{$start => $end}= BlockDiag::Edge->new($start, $end, $opt);
 
   return $self->edges->{$start => $end};
 }
@@ -256,7 +255,7 @@ sub new
 sub add_edge
 {
   my ($self, $to, $opt)= @_;
-  $block->edge({start => $self->id, end => $to, $opt ? %$opt : undef});
+  $block->edge($self->id, $to, $opt);
 }
 
 
@@ -270,9 +269,9 @@ use Carp;
 
 sub new
 {
-  my ($class, $opt)= @_;
-  my $self= {start     => $opt->{start},
-             end       => $opt->{end},
+  my ($class, $start, $end, $opt)= @_;
+  my $self= {start     => $start,
+             end       => $end,
              param     => $opt->{param},
              add_param => $opt->{add_param},
             };
