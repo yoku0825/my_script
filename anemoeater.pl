@@ -29,10 +29,12 @@ use Getopt::Long qw/:config posix_default bundling no_ignore_case gnu_compat/;
 my $opt= {parallel => 1,
           since    => 0,
           until    => 999912312359,
-          report   => 0,
-          docker   => 0};
+          report   => 100,
+          docker   => 1,
+         };
 GetOptions($opt, qw/socket=s host=s port=i user=s password=s
-                    parallel=i since=s until=s report=i docker/) or die;
+                    parallel=i since=s until=s report=i cell=i no-docker/) or die;
+$opt->{docker}= 0 if $opt->{"no-docker"};
 
 ### Starting docker container.
 if ($opt->{docker})
