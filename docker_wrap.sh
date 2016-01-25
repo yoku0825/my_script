@@ -23,9 +23,7 @@ declare directory_for_setup="/tmp/setup"
 declare not_remove_image="redash|nico-docker|gitbucket"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
-                                  "yoku0825/private:kibana4" \
-                                  "yoku0825/private:redash" \
-                                  "yoku0825/private:nico-docker")
+                                  "yoku0825/private:redash")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
 
