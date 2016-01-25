@@ -45,6 +45,10 @@ while (<>)
   {
     my ($dml, $table)= (lc($1), lc($2));
     $table =~ s/`//g;
+    if ($table =~ /([^\(]+)\(/)
+    {
+      $table= $1;
+    }
 
     if ($time_string && $dml && $table)
     {
