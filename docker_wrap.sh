@@ -270,7 +270,7 @@ case "$command" in
   "bash")
     container_id="$1"
     arbitrate_container_name "bash"
-    docker run -it --privileged --name bash $container_id bash
+    docker run -it -v $PWD:/root/cwd --privileged --name bash $container_id bash
     ;;
   "build")
     if [[ ! "$*" =~ --tag ]] ; then
@@ -292,7 +292,7 @@ case "$command" in
     ;;
   "here")
     arbitrate_container_name "here"
-    container_id=$(docker run -d --privileged --name here yoku0825/here)
+    container_id=$(docker run -d -v $PWD:/root/cwd --privileged --name here yoku0825/here)
     display_one_information $container_id
     ;;
   "history")
@@ -357,7 +357,7 @@ case "$command" in
       container_id=$(docker run --privileged $container_name $*)
       display_one_information $container_id
     else
-      docker run --privileged $container_name $*
+      docker run -v $PWD:/root/cwd --privileged $container_name $*
     fi
     ;;
   "scp")
