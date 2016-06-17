@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-# Copyright (C) 2015  yoku0825
+# Copyright (C) 2015, 2016  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 
 declare directory_for_copy="/tmp/docker"
 declare directory_for_setup="/tmp/setup"
-declare not_remove_image="redash|nico-docker|gitbucket"
+declare not_remove_image="redash|nico-docker"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
                                   "yoku0825/private:redash")
