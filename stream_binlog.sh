@@ -46,7 +46,7 @@ export MYSQL_PWD=""
 export MYSQL_HOST=""
 export MYSQL_TCP_PORT=""
 export MYSQL_TEST_LOGIN_FILE=""
-export MYSQL_UNIX_PORT="/usr/mysql/5.6.31/data/mysql.sock"
+export MYSQL_UNIX_PORT=""
 
 workdir="$1"
 shift
