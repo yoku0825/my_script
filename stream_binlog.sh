@@ -53,7 +53,7 @@ shift
 args="$@"
 
 [ -z "$workdir" ] && usage "Directory must be specified"
-[ -w "$workdir" -a -x "$workdir" ] || usage "Permission denied(must have +rwx)"
+[ -w "$workdir" -a -x "$workdir" ] || mkdir -p "$workdir" || usage "Permission denied(must have +rwx)"
 
 exec=$(which mysqlbinlog 2> /dev/null)
 if [ -z "$exec" ] ; then
