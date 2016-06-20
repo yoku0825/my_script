@@ -70,15 +70,13 @@ trap 'kill $(jobs -p) ; exit 0' 1 2 3 15
 
 while true ; do
   latest=$(ls *.[0-9]*[0-9][0-9] 2> /dev/null | tail -1)
-  version=$(mysql $args -sse "SHOW VARIABLES LIKE 'version'")
+  version=$(mysql $args -sse "SHOW VARIABLES LIKE 'version'" | grep -o [0-9]\.[0-9])
 
-  if [[ "$version" =~ 4\.0 ]] ; then
-    user=$(mysql $args -sse "SELECT CURRENT_USER()")
-    grant=$(mysql $args -sse "SHOW GRANTS FOR $user")
-  else
-    grant=$(mysql $args -sse "SHOW GRANTS")
+  if [ $(echo "$version >= 5.0" | bc) != "1" ] ; then
+    usage "Unsupported MySQL version. (mysqlbinlog --raw needs mysqld >= 5.0)"
   fi
 
+  grant=$(mysql $args -sse "SHOW GRANTS")
   if [ -z "$grant" ] ; then
     usage "mysqlbinlog's option is something wrong (or MySQL server downs)"
   else
