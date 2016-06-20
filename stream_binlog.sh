@@ -70,7 +70,15 @@ trap 'kill $(jobs -p) ; exit 0' 1 2 3 15
 
 while true ; do
   latest=$(ls *.[0-9]*[0-9][0-9] 2> /dev/null | tail -1)
-  grant=$(mysql $args -sse "SHOW GRANTS")
+  version=$(mysql $args -sse "SHOW VARIABLES LIKE 'version'")
+
+  if [[ "$version" =~ 4\.0 ]] ; then
+    user=$(mysql $args -sse "SELECT CURRENT_USER()")
+    grant=$(mysql $args -sse "SHOW GRANTS FOR $user")
+  else
+    grant=$(mysql $args -sse "SHOW GRANTS")
+  fi
+
   if [ -z "$grant" ] ; then
     usage "mysqlbinlog's option is something wrong (or MySQL server downs)"
   else
@@ -81,7 +89,7 @@ while true ; do
   fi
   
   if [ -z "$latest" ] ; then
-    latest=$(mysql $args -sse "SHOW BINARY LOGS" | head -1 | awk '{print $1}' 2> /dev/null)
+    latest=$(mysql $args -sse "SHOW MASTER LOGS" | head -1 | awk '{print $1}' 2> /dev/null)
   
     if [ -z "$latest" ] ; then
       usage "SHOW BINARY LOGS(auto-detection of binlog which $0 should start) failed. Need REPLICATION CLIENT privilege"
