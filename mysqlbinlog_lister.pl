@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 ########################################################################
-# Copyright (C) 2014, 2015  yoku0825
+# Copyright (C) 2014, 2016  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -64,7 +64,7 @@ foreach my $time (sort(keys(%$count_hash)))
   my $time_printable= sprintf($print_format, $time);
   foreach my $tbl (sort(keys(%{$count_hash->{$time}})))
   {
-    foreach my $stmt qw/insert update delete replace/
+    foreach my $stmt (qw/insert update delete replace/)
     {
       if (defined($count_hash->{$time}->{$tbl}->{$stmt}))
       {

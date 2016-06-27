@@ -49,7 +49,7 @@ while (<$fh>)
 my $db_name  = "tpcc";
 my $user     = "tpcc";
 my $password = "test";
-my $warehouse= 10;
+my $warehouse= 4;
 
 
 system($tpcc_load . " localhost $db_name $user $password $warehouse 1 1 $warehouse");

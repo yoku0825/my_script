@@ -59,7 +59,7 @@ sub raw_loop
     if ($type eq "normalize")
     {
       $str = Unicode::Japanese->new($str)->z2h->h2zKana->get;
-      $str =~ tr/a-z/A-Z/;
+      #$str =~ tr/a-z/A-Z/;
     }
  
     for (my $node= $self->mecab->parse($str); $node; $node= $node->next)
