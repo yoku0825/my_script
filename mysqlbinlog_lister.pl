@@ -26,9 +26,11 @@ use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
 ### aggrigation unit. "h|hour" => per hour, "m|minute" => per minute, "s|second" => per second.
 my $cell    = "10m";
 my $group_by= "time";
+my $output  = "tsv";
 GetOptions("cell=s"       => \$cell,
            "group-by=s"   => \$group_by,
            "save"         => \my $save,
+           "output=s"     => \$output,
            "help|usage|h" => \my $usage) or die;
 usage() if $usage;
 my ($header_parser, $print_format)= set_parser($cell);
@@ -99,7 +101,7 @@ if ($group_by eq "table" || $group_by eq "statement")
   ### Only have 1 element.
   foreach my $element (sort(keys(%$count_hash)))
   {
-    printf("%s\t%d\n", $element, $count_hash->{$element});
+    write_line($element, $count_hash->{$element});
   }
 }
 elsif ($group_by eq "table,statement")
@@ -109,7 +111,7 @@ elsif ($group_by eq "table,statement")
   {
     foreach my $dml (sort(keys(%{$count_hash->{$table}})))
     {
-      printf("%s\t%s\t%d\n", $table, $dml, $count_hash->{$table}->{$dml});
+      write_line($table, $dml, $count_hash->{$table}->{$dml});
     }
   }
 }
@@ -122,13 +124,13 @@ else
 
     if ($group_by eq "time")
     {
-      printf("%s\t%d\n", $time_printable, $count_hash->{$time});
+      write_line($time_printable, $count_hash->{$time});
     }
     elsif ($group_by eq "time,table" || $group_by eq "time,statement")
     {
       foreach my $element (sort(keys(%{$count_hash->{$time}})))
       {
-        printf("%s\t%s\t%d\n", $time_printable, $element, $count_hash->{$time}->{$element});
+        write_line($time_printable, $element, $count_hash->{$time}->{$element});
       }
     }
     elsif ($group_by eq "all" || $group_by eq "time,table,statement")
@@ -137,7 +139,7 @@ else
       {
         foreach my $dml (sort(keys(%{$count_hash->{$time}->{$table}})))
         {
-          printf("%s\t%s\t%s\t%d\n", $time_printable, $table, $dml, $count_hash->{$time}->{$table}->{$dml});
+          write_line($time_printable, $table, $dml, $count_hash->{$time}->{$table}->{$dml});
         }
       }
     }
@@ -185,6 +187,15 @@ sub set_parser
 }
 
 
+sub write_line
+{
+  my (@args)= @_;
+  my $seperator= $output eq "tsv" ? "\t" : $output eq "csv" ? "," : "\n";
+
+  printf("%s\n", join($seperator, @args));
+}
+
+
 sub usage
 {
   print << "EOS";
@@ -216,6 +227,8 @@ options:
                           "time,table", "time,statement", "table,statement",
                           "all", "time,table,statement" (same as "all")
   --save                Save scrpit's stdin(mysqlbinlog's stdout) into $save_file
+  --output=string       Output type. [default: tsv]
+                          "tsv", "csv"
   --usage, --help, -h   Print this message.
 EOS
   exit 0;
