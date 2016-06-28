@@ -54,59 +54,91 @@ while (<>)
 
     if ($time_string && $dml && $table)
     {
-      $count_hash->{$time_string}->{$table}->{$dml}++;
+      if ($group_by eq "all" || $group_by eq "time,table,statement")
+      {
+        $count_hash->{$time_string}->{$table}->{$dml}++;
+      }
+      elsif ($group_by eq "time,table")
+      {
+        $count_hash->{$time_string}->{$table}++;
+      }
+      elsif ($group_by eq "time")
+      {
+        $count_hash->{$time_string}++;
+      }
+      elsif ($group_by eq "table")
+      {
+        $count_hash->{$table}++;
+      }
+      elsif ($group_by eq "statement")
+      {
+        $count_hash->{$dml}++;
+      }
+      elsif ($group_by eq "time,statement")
+      {
+        $count_hash->{$time_string}->{$dml}++;
+      }
+      elsif ($group_by eq "table,statement")
+      {
+        $count_hash->{$table}->{$dml}++;
+      }
+        
       $time_string= $dml= $table= "";
     }
   }
 }
 
 ### after reading all lines, printing them all.
-foreach my $time (sort(keys(%$count_hash)))
+if ($group_by eq "table" || $group_by eq "statement")
 {
-  my $time_printable= sprintf($print_format, $time);
-  foreach my $tbl (sort(keys(%{$count_hash->{$time}})))
+  ### Only have 1 element.
+  foreach my $element (sort(keys(%$count_hash)))
   {
-    foreach my $stmt (qw/insert update delete replace/)
+    printf("%s\t%d\n", $element, $count_hash->{$element});
+  }
+}
+elsif ($group_by eq "table,statement")
+{
+  ### Have 2 elements without "time"
+  foreach my $table (sort(keys(%$count_hash)))
+  {
+    foreach my $dml (sort(keys(%{$count_hash->{$table}})))
     {
-      if (defined($count_hash->{$time}->{$tbl}->{$stmt}))
-      {
-        my $val= $count_hash->{$time}->{$tbl}->{$stmt};
+      printf("%s\t%s\t%d\n", $table, $dml, $count_hash->{$table}->{$dml});
+    }
+  }
+}
+else
+{
+  ### starting with "time"
+  foreach my $time (sort(keys(%$count_hash)))
+  {
+    my $time_printable= sprintf($print_format, $time);
 
-        if ($group_by eq "all")
-        {
-          printf("%s\t%s\t%s\t%d\n", $time_printable, $tbl, $stmt, $val);
-        }
-        $count_hash->{time_table}->{$time}->{$tbl} += $val;
-        $count_hash->{time}->{$time} += $val;
-        $count_hash->{table}->{$tbl} += $val;
+    if ($group_by eq "time")
+    {
+      printf("%s\t%d\n", $time_printable, $count_hash->{$time});
+    }
+    elsif ($group_by eq "time,table" || $group_by eq "time,statement")
+    {
+      foreach my $element (sort(keys(%{$count_hash->{$time}})))
+      {
+        printf("%s\t%s\t%d\n", $time_printable, $element, $count_hash->{$time}->{$element});
       }
     }
-
-    if ($group_by eq "time,table")
+    elsif ($group_by eq "all" || $group_by eq "time,table,statement")
     {
-      printf("%s\t%s\tsum\t%d\n",
-             $time_printable, $tbl,
-             $count_hash->{time_table}->{$time}->{$tbl});
+      foreach my $table (sort(keys(%{$count_hash->{$time}})))
+      {
+        foreach my $dml (sort(keys(%{$count_hash->{$time}->{$table}})))
+        {
+          printf("%s\t%s\t%s\t%d\n", $time_printable, $table, $dml, $count_hash->{$time}->{$table}->{$dml});
+        }
+      }
     }
   }
-
-  if ($group_by eq "time")
-  {
-    printf("%s\tsum\t%d\n",
-           $time_printable, $count_hash->{time}->{$time});
-  }
 }
 
-if ($group_by eq "table")
-{
-  foreach my $tbl (sort(keys(%{$count_hash->{table}})))
-  {
-    printf("%s\tsum\t%d\n",
-           $tbl, $count_hash->{table}->{$tbl});
-  }
-}
-
-  
 exit 0;
 
 
@@ -152,7 +184,7 @@ sub usage
 $0 is aggregator of mysqlbinlog's output.
 
 expample:
-  \$ mysqlbinlog --start-datetime="2012-03-04" --stop-datetime="2012-03-05" mysql-bin.000012 | $0 --cell m
+  \$ mysqlbinlog --start-datetime="2012-03-04" --stop-datetime="2012-03-05" mysql-bin.000012 | $0 --cell m --group-by="time,statement"
   ..
   140823 23:36    insert  57
   140823 23:36    update  580
@@ -173,7 +205,9 @@ options:
                           "10m", 
                           "h", "hour"
   --group-by=string     Part of aggregation. [default: time]
-                          "time", "time,table", "table", "all"("all" means "time,table,statement")
+                          "time", "table", "statement",
+                          "time,table", "time,statement", "table,statement",
+                          "all", "time,table,statement" (same as "all")
   --usage, --help, -h   Print this message.
 EOS
   exit 0;
