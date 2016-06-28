@@ -36,7 +36,7 @@ usage() if $usage;
 my ($header_parser, $print_format)= set_parser($cell);
 
 my $save_file= "mysqlbinlog_save.txt";
-my ($time_string, $count_hash, $sum, $fh);
+my ($time_string, $count_hash, $sum, $fh, $first_seen, $last_seen);
 open($fh, ">", $save_file) if $save;
 
 ### read from stdin.
@@ -47,6 +47,8 @@ while (<>)
   if (/$header_parser/)
   {
     $time_string= $1;
+    $first_seen = $time_string unless $first_seen;
+    $last_seen  = $time_string;
   }
 
   ### parsing dml-line (only parse simple INSERT, UPDATE, DELETE, REPLACE)
@@ -94,6 +96,10 @@ while (<>)
     }
   }
 }
+
+printf("binlog entries between %s and %s\n",
+       sprintf($print_format, $first_seen),
+       sprintf($print_format, $last_seen));
 
 ### after reading all lines, printing them all.
 if ($group_by eq "table" || $group_by eq "statement")
