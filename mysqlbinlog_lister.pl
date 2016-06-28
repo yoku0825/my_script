@@ -20,6 +20,7 @@
 
 use strict;
 use warnings;
+use utf8;
 use Getopt::Long qw/:config bundling gnu_compat no_ignore_case posix_default/;
 
 ### aggrigation unit. "h|hour" => per hour, "m|minute" => per minute, "s|second" => per second.
@@ -27,15 +28,19 @@ my $cell    = "10m";
 my $group_by= "time";
 GetOptions("cell=s"       => \$cell,
            "group-by=s"   => \$group_by,
+           "save"         => \my $save,
            "help|usage|h" => \my $usage) or die;
 usage() if $usage;
 my ($header_parser, $print_format)= set_parser($cell);
 
-my ($time_string, $count_hash, $sum);
+my $save_file= "mysqlbinlog_save.txt";
+my ($time_string, $count_hash, $sum, $fh);
+open($fh, ">", $save_file) if $save;
 
 ### read from stdin.
 while (<>)
 {
+  print $fh $_ if $save;
   ### parsing datetime from comment line.
   if (/$header_parser/)
   {
@@ -139,6 +144,8 @@ else
   }
 }
 
+printf("stdin was saved on %s\n", $save_file) if $save;
+
 exit 0;
 
 
@@ -208,6 +215,7 @@ options:
                           "time", "table", "statement",
                           "time,table", "time,statement", "table,statement",
                           "all", "time,table,statement" (same as "all")
+  --save                Save scrpit's stdin(mysqlbinlog's stdout) into $save_file
   --usage, --help, -h   Print this message.
 EOS
   exit 0;
