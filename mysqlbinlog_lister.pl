@@ -38,7 +38,9 @@ while (<>)
 {
   ### parsing datetime from comment line.
   if (/$header_parser/)
-    {$time_string= $1;}
+  {
+    $time_string= $1;
+  }
 
   ### parsing dml-line (only parse simple INSERT, UPDATE, DELETE, REPLACE)
   elsif (/^(insert|update|delete|replace)\s+(?:(?:into|from)?)\s+(\S+?)\s+/i)
@@ -69,8 +71,11 @@ foreach my $time (sort(keys(%$count_hash)))
       if (defined($count_hash->{$time}->{$tbl}->{$stmt}))
       {
         my $val= $count_hash->{$time}->{$tbl}->{$stmt};
+
         if ($group_by eq "all")
-          {printf("%s\t%s\t%s\t%d\n", $time_printable, $tbl, $stmt, $val);}
+        {
+          printf("%s\t%s\t%s\t%d\n", $time_printable, $tbl, $stmt, $val);
+        }
         $count_hash->{time_table}->{$time}->{$tbl} += $val;
         $count_hash->{time}->{$time} += $val;
         $count_hash->{table}->{$tbl} += $val;
@@ -168,7 +173,7 @@ options:
                           "10m", 
                           "h", "hour"
   --group-by=string     Part of aggregation. [default: time]
-                          "time", "time,table", "table", "all"
+                          "time", "time,table", "table", "all"("all" means "time,table,statement")
   --usage, --help, -h   Print this message.
 EOS
   exit 0;
