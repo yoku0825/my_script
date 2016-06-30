@@ -33,6 +33,10 @@ GetOptions("cell=s"       => \$cell,
            "output=s"     => \$output,
            "help|usage|h" => \my $usage) or die;
 usage() if $usage;
+
+### normalize group-by string
+$group_by= sort_csv($group_by);
+
 my ($header_parser, $print_format)= set_parser($cell);
 
 my $save_file= "mysqlbinlog_save.txt";
@@ -63,11 +67,11 @@ while (<>)
 
     if ($time_string && $dml && $table)
     {
-      if ($group_by eq "all" || $group_by eq "time,table,statement")
+      if ($group_by eq "all" || $group_by eq sort_csv("time,table,statement"))
       {
         $count_hash->{$time_string}->{$table}->{$dml}++;
       }
-      elsif ($group_by eq "time,table")
+      elsif ($group_by eq sort_csv("time,table"))
       {
         $count_hash->{$time_string}->{$table}++;
       }
@@ -83,11 +87,11 @@ while (<>)
       {
         $count_hash->{$dml}++;
       }
-      elsif ($group_by eq "time,statement")
+      elsif ($group_by eq sort_csv("time,statement"))
       {
         $count_hash->{$time_string}->{$dml}++;
       }
-      elsif ($group_by eq "table,statement")
+      elsif ($group_by eq sort_csv("table,statement"))
       {
         $count_hash->{$table}->{$dml}++;
       }
@@ -110,7 +114,7 @@ if ($group_by eq "table" || $group_by eq "statement")
     write_line($element, $count_hash->{$element});
   }
 }
-elsif ($group_by eq "table,statement")
+elsif ($group_by eq sort_csv("table,statement"))
 {
   ### Have 2 elements without "time"
   foreach my $table (sort(keys(%$count_hash)))
@@ -132,14 +136,14 @@ else
     {
       write_line($time_printable, $count_hash->{$time});
     }
-    elsif ($group_by eq "time,table" || $group_by eq "time,statement")
+    elsif ($group_by eq sort_csv("time,table") || $group_by eq sort_csv("time,statement"))
     {
       foreach my $element (sort(keys(%{$count_hash->{$time}})))
       {
         write_line($time_printable, $element, $count_hash->{$time}->{$element});
       }
     }
-    elsif ($group_by eq "all" || $group_by eq "time,table,statement")
+    elsif ($group_by eq "all" || $group_by eq sort_csv("time,table,statement"))
     {
       foreach my $table (sort(keys(%{$count_hash->{$time}})))
       {
@@ -199,6 +203,14 @@ sub write_line
   my $seperator= $output eq "tsv" ? "\t" : $output eq "csv" ? "," : "\n";
 
   printf("%s\n", join($seperator, @args));
+}
+
+
+sub sort_csv
+{
+  my ($csv)= @_;
+
+  return join(",", sort(split(/,/, $csv)));
 }
 
 
