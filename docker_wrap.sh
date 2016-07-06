@@ -23,6 +23,7 @@ declare directory_for_setup="/tmp/setup"
 declare not_remove_image="redash|nico-docker"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
+                                  "yoku0825/here:7" \
                                   "yoku0825/private:redash")
 declare -a repositories_for_push=("${repositories_for_pull[@]}")
 
@@ -221,6 +222,7 @@ Implementated subcommands:
   "$name enter" executs nsenter like docker_enter.
   "$name file" is picking image's $directory_for_setup.
   "$name here" is same as "docker run -d yoku0825/here".
+  "$name here7" is same as "docker run -d yoku0825/here:7".
   "$name im" is same as "docker images".
   "$name init" is same as "docker run -it bash centos:centos6.6"
   "$name logs" is same as "docker logs -t -f --tail=10".
@@ -291,6 +293,11 @@ case "$command" in
   "here")
     arbitrate_container_name "here"
     container_id=$(docker run -d -v $PWD:/root/cwd --privileged --name here yoku0825/here)
+    display_one_information $container_id
+    ;;
+  "here7")
+    arbitrate_container_name "here"
+    container_id=$(docker run -d -v $PWD:/root/cwd --privileged --name here yoku0825/here:7)
     display_one_information $container_id
     ;;
   "history")
