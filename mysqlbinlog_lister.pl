@@ -38,6 +38,7 @@ usage() if $usage;
 $group_by= sort_csv($group_by);
 
 my ($header_parser, $print_format)= set_parser($cell);
+usage("--cell=$cell is invalid") unless $header_parser;
 
 my $save_file= "mysqlbinlog_save.txt";
 my ($time_string, $count_hash, $sum, $fh, $first_seen, $last_seen);
@@ -164,33 +165,38 @@ exit 0;
 ### set regexp for parsing datetime.
 sub set_parser
 {
-  my ($granuality)= @_;
+  my ($cell)= @_;
   my ($parse, $format);
 
-  if ($granuality eq "h" || $granuality eq "hour")
+  if ($cell eq "h" || $cell eq "hour" || $cell eq "1h")
   {
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}):\d{2}:\d{2}/;
     $format= "%s:00";
   }
-  elsif ($granuality eq "m" || $granuality eq "minute" || $granuality eq "1m")
+  elsif ($cell eq "m" || $cell eq "minute" || $cell eq "1m")
   {
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}):\d{2}/;
     $format= "%s";
   }
-  elsif ($granuality eq "10m")
+  elsif ($cell eq "10m")
   {
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{1})\d{1}:\d{2}/;
     $format= "%s0";
   }
-  elsif ($granuality eq "10s")
+  elsif ($cell eq "10s")
   {
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{1})\d{1}/;
     $format= "%s0";
   }
-  else # same as ($granuality eq "s" || $granuality eq "second")
+  elsif ($cell eq "s" || $cell eq "second" || $cell eq "1s")
   {
     $parse = qr/^#(\d{2}\d{2}\d{2}\s+\d{1,2}:\d{2}:\d{2})/;
     $format= "%s";
+  }
+  else
+  {
+    $parse = undef;
+    $format= undef;
   }
 
   return ($parse, $format);
@@ -216,8 +222,10 @@ sub sort_csv
 
 sub usage
 {
+  my ($msg)= @_;
+
   print << "EOS";
-$0 is aggregator of mysqlbinlog's output.
+$0 is aggregator of mysqlbinlog's output. $msg
 
 expample:
   \$ mysqlbinlog --start-datetime="2012-03-04" --stop-datetime="2012-03-05" mysql-bin.000012 | $0 --cell m --group-by="time,statement"
@@ -236,10 +244,11 @@ expample:
 options:
   --cell=string         Unit of aggregation. [default: 10m]
                         Currentry supported are,
-                          "s", "second",
+                          "s", "second", "1s",
+                          "10s",
                           "m", "minute", "1m",
                           "10m", 
-                          "h", "hour"
+                          "h", "hour", "1h"
   --group-by=string     Part of aggregation. [default: time]
                           "time", "table", "statement",
                           "time,table", "time,statement", "table,statement",
