@@ -225,6 +225,7 @@ Implementated subcommands:
   "$name here7" is same as "docker run -d yoku0825/here:7".
   "$name im" is same as "docker images".
   "$name init" is same as "docker run -it bash centos:centos6.6"
+  "$name init7" is same as "docker run -it bash centos:centos7"
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
   "$name rmf" will removing all containers except of \$not_remove_image, even if they are running. 
@@ -308,6 +309,9 @@ case "$command" in
     ;;
   "init")
     $0 bash centos:centos6.6
+    ;;
+  "init7")
+    $0 bash centos:centos7
     ;;
   "logs")
     if [ -z "$*" ] ; then
