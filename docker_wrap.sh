@@ -36,10 +36,9 @@ FROM centos:centos6.6
 MAINTAINER yoku0825
 WORKDIR /root
 
-RUN yum install -y git
 RUN test -d /tmp/setup || mkdir /tmp/setup
+RUN curl -L https://github.com/yoku0825/init_script/raw/master/docker/docker_basic.sh | bash
 RUN git clone https://github.com/yoku0825/init_script.git /tmp/setup/init_script.git
-RUN bash /tmp/setup/init_script.git/docker/docker_basic.sh
 EOF
 
   [ "$?" = "0" ] && cat Dockerfile
