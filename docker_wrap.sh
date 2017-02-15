@@ -19,7 +19,7 @@
 ########################################################################
 
 declare directory_for_copy="/tmp/docker"
-declare directory_for_setup="/tmp/setup"
+declare directory_for_setup="/opt/setup"
 declare not_remove_image="redash|nico-docker"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
@@ -35,9 +35,9 @@ FROM centos:centos6.6
 MAINTAINER yoku0825
 WORKDIR /root
 
-RUN test -d /tmp/setup || mkdir /tmp/setup
+RUN test -d $directory_for_setup || mkdir $directory_for_setup
 RUN curl -L https://github.com/yoku0825/init_script/raw/master/docker/docker_basic.sh | bash
-RUN git clone https://github.com/yoku0825/init_script.git /tmp/setup/init_script.git
+RUN git clone https://github.com/yoku0825/init_script.git $directory_for_setup/init_script.git
 EOF
 
   [ "$?" = "0" ] && cat Dockerfile
@@ -202,8 +202,9 @@ function pull_dockerfile
 {
   image_id="$1"
 
-  docker run --name pull_dockerfile "$1" tar cf /tmp/setup.tar -C $directory_for_setup .
-  docker cp pull_dockerfile:/tmp/setup.tar $directory_for_copy/$image_id/
+  [ -d $directory_for_copy/$image_id/ ] || mkdir -p $directory_for_copy/$image_id/
+  docker run --name pull_dockerfile "$1" tar cf $directory_for_setup/setup.tar -C $directory_for_setup .
+  docker cp pull_dockerfile:$directory_for_setup/setup.tar $directory_for_copy/$image_id/
   docker rm pull_dockerfile
   echo "outputted: $directory_for_copy/$image_id/setup.tar"
 }
