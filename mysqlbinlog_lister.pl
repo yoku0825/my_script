@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 ########################################################################
-# Copyright (C) 2014, 2016  yoku0825
+# Copyright (C) 2014, 2017  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -57,7 +57,7 @@ while (<>)
   }
 
   ### parsing dml-line (only parse simple INSERT, UPDATE, DELETE, REPLACE)
-  elsif (/^(insert|update|delete|replace)\s+(?:(?:into|from)?)\s+(\S+?)\s+/i)
+  elsif (/^(insert|update|delete|replace)\s+(?:(?:into|from)?\s+)?(\S+?)\s+/i)
   {
     my ($dml, $table)= (lc($1), lc($2));
     $table =~ s/`//g;
