@@ -57,9 +57,9 @@ while (<>)
   }
 
   ### parsing dml-line (only parse simple INSERT, UPDATE, DELETE, REPLACE)
-  elsif (/^(insert|update|delete|replace)\s+(?:(?:into|from)?\s+)?(\S+?)\s+/i)
+  elsif (/^(insert|update|delete|replace)\s+(?:ignore\s+)?(?:(?:into|from)?\s+)?(\S+?)\s+/i)
   {
-    my ($dml, $table)= (lc($1), lc($2));
+    my ($dml, $table)= (uc($1), lc($2));
     $table =~ s/`//g;
     if ($table =~ /([^\(]+)\(/)
     {
