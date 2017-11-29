@@ -35,6 +35,10 @@ case "$command" in
   "log")
     git log --name-only $*
     ;;
+  "pr")
+    pr_num="$1"
+    git fetch origin pull/${pr_num}/head:pull_${pr_num}
+    ;;
   "tree")
     git log --graph --all --format="%x09%C(cyan bold)%an%Creset%x09%C(yellow)%h%Creset %C(magenta reverse)%d%Creset %s"
     ;;
