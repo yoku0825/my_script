@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-# Copyright (C) 2015, 2016  yoku0825
+# Copyright (C) 2015, 2018  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 
 declare directory_for_copy="/tmp/docker"
 declare directory_for_setup="/opt/setup"
+declare old_directory_for_setup="/tmp/setup"
 declare not_remove_image="redash|nico-docker"
 declare -a files_for_salvage=("/root/.bash_history")
 declare -a repositories_for_pull=("yoku0825/here" \
@@ -31,7 +32,7 @@ function print_template
 {
   set -C
   cat << EOF > Dockerfile
-FROM centos:centos6.6
+FROM centos:centos6.9
 MAINTAINER yoku0825
 WORKDIR /root
 
@@ -206,6 +207,11 @@ function pull_dockerfile
   docker run --name pull_dockerfile "$1" tar cf $directory_for_setup/setup.tar -C $directory_for_setup .
   docker cp pull_dockerfile:$directory_for_setup/setup.tar $directory_for_copy/$image_id/
   docker rm pull_dockerfile
+
+  docker run --name pull_dockerfile "$1" tar cf $old_directory_for_setup/old_setup.tar -C $old_directory_for_setup .
+  docker cp pull_dockerfile:$old_directory_for_setup/setup.tar $directory_for_copy/$image_id/
+  docker rm pull_dockerfile
+
   echo "outputted: $directory_for_copy/$image_id/setup.tar"
 }
 
@@ -217,13 +223,14 @@ $name is wrapper script for docker.
 
 Implementated subcommands:
   "$name a" is same as "$name attach", see also extended subcommand of "attach".
+  "$name alive" checks given container_id is alive. return true(0) or false(1) as return code.
   "$name bash" is same as "docker run -it bash".
   "$name enter" executs nsenter like docker_enter.
   "$name file" is picking image's $directory_for_setup.
   "$name here" is same as "docker run -d yoku0825/here".
   "$name here7" is same as "docker run -d yoku0825/here:7".
   "$name im" is same as "docker images".
-  "$name init" is same as "docker run -it bash centos:centos6.6"
+  "$name init" is same as "docker run -it bash centos:centos6.9"
   "$name init7" is same as "docker run -it bash centos:centos7"
   "$name logs" is same as "docker logs -t -f --tail=10".
   "$name logs" with no argument behave to be gave container_id which is first one in docker ps.
@@ -267,6 +274,12 @@ case "$command" in
     fi
     start_and_attach $container_id
     ;;
+  "alive")
+    container_id="$1"
+    ret=$(docker inspect $container_id 2> /dev/null | jq -r '.[].State.Status' 2> /dev/null)
+
+    [[ $ret == "running" ]] && true || false
+    ;;
   "bash")
     container_id="$1"
     arbitrate_container_name "bash"
@@ -307,7 +320,7 @@ case "$command" in
     docker images $*
     ;;
   "init")
-    $0 bash centos:centos6.6
+    $0 bash centos:centos6.9
     ;;
   "init7")
     $0 bash centos:centos7
