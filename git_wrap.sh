@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-# Copyright (C) 2016  yoku0825
+# Copyright (C) 2016, 2018  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@ case "$command" in
   "pr")
     pr_num="$1"
     git fetch origin pull/${pr_num}/head:pull_${pr_num}
+    git checkout pull_${pr_num}
     ;;
   "tree")
     git log --graph --all --format="%x09%C(cyan bold)%an%Creset%x09%C(yellow)%h%Creset %C(magenta reverse)%d%Creset %s"
