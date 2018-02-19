@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+print "This script has been moved to yt-binlog-groupby and not maintaining now.\n";
+print "Please refer https://github.com/yoku0825/ytkit \n";
+
 ########################################################################
 # Copyright (C) 2014, 2017  yoku0825
 #
