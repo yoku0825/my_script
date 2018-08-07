@@ -27,9 +27,9 @@ case "$command" in
     ;;
   "fetch")
     if [ -z "$*" ] ; then
-      git fetch --all
+      git fetch --prune --all
     else
-      git fetch $*
+      git fetch --prune $*
     fi
     ;;
   "log")
