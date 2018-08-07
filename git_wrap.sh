@@ -32,6 +32,11 @@ case "$command" in
       git fetch --prune $*
     fi
     ;;
+  "gc")
+    git checkout master
+    git branch -d $(git branch -a | grep -v master)
+    git gc
+    ;;
   "log")
     git log --name-only $*
     ;;
