@@ -3,11 +3,14 @@
 use strict;
 use warnings;
 use utf8;
+use Encode;
 
 use XML::Simple;
 use HTTP::Tiny;
 use Time::Piece qw{localtime};
 use Time::Seconds;
+use WebService::Dropbox;
+use Config::Pit qw{pit_get};
 
 my $image_name="yyoshiki41/radigo";
 my @keyword= qw{ radio_title_which_you_want_download };
@@ -18,23 +21,22 @@ eval
 {
   no strict;
   no warnings "once";
-  require "list.txt";
+  require "cache/list.txt";
   $hash= $VAR1;
 };
 
 my $term= localtime() - 3 * ONE_HOUR;
+
+my $config= pit_get("dropbox");
+my $dropbox= WebService::Dropbox->new($config);
+$dropbox->access_token($config->{access_token});
 
 foreach my $prog (@$hash)
 {
   if ($prog->{from} < $term->strftime("%Y%m%d%H%M%S"))
   {
     my ($command, $origfile, $newfile)= make_docker_run_command($prog);
-    if (-e $newfile)
-    {
-      ### already completed
-      next;
-    }
-    else
+    if (!(-e $newfile))
     {
       if (-e $origfile)
       {
@@ -46,6 +48,17 @@ foreach my $prog (@$hash)
       system($command);
       rename($origfile, $newfile);
     }
+
+    my ($basename)= $newfile =~ qr|/([^/]+)$|;
+    $basename= decode("utf-8", $basename);
+    if ($dropbox->search("/radio", $basename)->{start} == 0)
+    {
+      ### Not upload yet.
+      open(my $fh, "<", $newfile);
+
+      $dropbox->upload("/radio/$basename", $fh) || $dropbox->error;
+      close($fh);
+    }
   }
 }
 
@@ -53,17 +66,23 @@ sub make_docker_run_command
 {
   my ($prog)= @_;
 
-  my $command= sprintf("docker run -it -v %s/output:/output %s rec -id=%s -start=%s",
+  my $command= sprintf("docker run --rm -v %s/output:/output %s rec -id=%s -start=%s -output=mp3",
                        $ENV{PWD}, $image_name, $prog->{station}, $prog->{from});
-  my $origfile= sprintf("output/%s-%s.aac", $prog->{from}, $prog->{station});
-  my $newfile = sprintf("output/%s_%s.aac", $prog->{title}, substr($prog->{from}, 0, 8));
+  my $origfile= sprintf("%s-%s.mp3", $prog->{from}, $prog->{station});
+  my $newfile = sprintf("%s_%s.mp3", substr($prog->{from}, 0, 8), $prog->{title});
 
-  return ($command, $origfile, $newfile);
+  ### if $newfile has "/", 
+  $newfile =~ s|/|_|g;
+
+  return ($command, sprintf("output/%s", $origfile), sprintf("output/%s", $newfile));
 }
 
 sub create_list
 {
-  open(my $fh, ">", "list.txt");
+  my $filename= "cache/list.txt";
+  return 0 if !(one_day_ago($filename));
+ 
+  open(my $fh, ">", $filename);
   binmode $fh, ":utf8";
   print($fh "\$VAR1=[\n");
 
@@ -93,22 +112,14 @@ sub create_cache
 {
   my ($station)= @_;
 
-  my $now = localtime;
   my $filename= sprintf("cache/%s.xml", $station);
-  my @stat= stat($filename);
+  reutrn $filename if !(one_day_ago($filename));
 
-  if (@stat && $stat[9] + ONE_DAY > $now->epoch)
-  {
-    ### Read from cache.
-  }
-  else
-  {
-    my $http= HTTP::Tiny->new;
-    open(my $fh, ">", $filename);
-    my $url= sprintf("http://radiko.jp/v3/program/station/weekly/%s.xml", $station);
-    print($fh $http->get($url)->{content});
-    close($fh);
-  }
+  my $http= HTTP::Tiny->new;
+  open(my $fh, ">", $filename);
+  my $url= sprintf("http://radiko.jp/v3/program/station/weekly/%s.xml", $station);
+  print($fh $http->get($url)->{content});
+  close($fh);
 
   return $filename;
 }
@@ -125,4 +136,18 @@ sub read_cache
   my $program= $xml->{stations}->{station}->{progs};
  
   return $program;
+}
+
+sub one_day_ago
+{
+  my ($filename)= @_;
+  my $now = localtime;
+  my @stat= stat($filename);
+
+  if (@stat && $stat[9] + ONE_DAY > $now->epoch)
+  {
+    ### Read from cache.
+    return 0;
+  }
+  return 1;
 }
