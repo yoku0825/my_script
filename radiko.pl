@@ -47,15 +47,11 @@ foreach my $prog (@$hash)
 
       system($command);
       rename($origfile, $newfile);
-    }
 
-    my ($basename)= $newfile =~ qr|/([^/]+)$|;
-    $basename= decode("utf-8", $basename);
-    if ($dropbox->search("/radio", $basename)->{start} == 0)
-    {
-      ### Not upload yet.
+      my ($basename)= $newfile =~ qr|/([^/]+)$|;
+      $basename= decode("utf-8", $basename);
+
       open(my $fh, "<", $newfile);
-
       $dropbox->upload("/radio/$basename", $fh) || $dropbox->error;
       close($fh);
     }
