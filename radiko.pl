@@ -12,8 +12,11 @@ use Time::Seconds;
 use WebService::Dropbox;
 use Config::Pit qw{pit_get};
 
-my $image_name="yyoshiki41/radigo";
 my @keyword= qw{ radio_title_which_you_want_download };
+binmode STDOUT, ":utf8";
+
+my $image_name="yyoshiki41/radigo:v0.11.0";
+my $verbose= 0;
 
 create_list();
 my $hash;
@@ -84,7 +87,7 @@ sub create_list
   binmode $fh, ":utf8";
   print($fh "\$VAR1=[\n");
 
-  foreach my $station (qw{TBS QRR LFR RN1 RN2 INT FMT FMJ JORF BAYFM78 NACK5 YFM HOUSOU-DAIGAKU JOAK JOAB JOAK-FM})
+  foreach my $station (qw{TBS QRR LFR RN1 RN2 INT FMT FMJ JORF BAYFM78 NACK5 YFM})
   {
     print $station, "\n" if $verbose;
     my $filename= create_cache($station) || die $!;
