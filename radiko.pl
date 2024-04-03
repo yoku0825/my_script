@@ -47,12 +47,14 @@ foreach my $prog (@$hash)
 
       system($command);
       rename($origfile, $newfile);
-
+$|=1;
       my ($basename)= $newfile =~ qr|/([^/]+)$|;
       $basename= decode("utf-8", $basename);
+      print $basename;
+
 
       open(my $fh, "<", $newfile);
-      $dropbox->upload("/radio/$basename", $fh) || $dropbox->error;
+      $dropbox->upload_session("/radio/$basename", $fh) || $dropbox->error;
       close($fh);
     }
   }
@@ -76,7 +78,7 @@ sub make_docker_run_command
 sub create_list
 {
   my $filename= "cache/list.txt";
-  return 0 if !(one_day_ago($filename));
+  #return 0 if !(one_day_ago($filename));
  
   open(my $fh, ">", $filename);
   binmode $fh, ":utf8";
@@ -84,14 +86,17 @@ sub create_list
 
   foreach my $station (qw{TBS QRR LFR RN1 RN2 INT FMT FMJ JORF BAYFM78 NACK5 YFM HOUSOU-DAIGAKU JOAK JOAB JOAK-FM})
   {
-    my $filename= create_cache($station);
-    my $program = read_cache($filename);
+    print $station, "\n" if $verbose;
+    my $filename= create_cache($station) || die $!;
+    my $program = read_cache($filename) || die $!;
     
     foreach (@$program)
     {
+      printf("%s: %d progs\n", $filename, scalar(@{$_->{prog}})) if $verbose;
       foreach (@{$_->{prog}})
       {
         my $title= $_->{title};
+        print $title, "\n" if $verbose;
         if (grep { $title =~ $_ } @keyword)
         {
           printf($fh "{ from => '%d', title => '%s', station => '%s', }, \n",
@@ -109,12 +114,23 @@ sub create_cache
   my ($station)= @_;
 
   my $filename= sprintf("cache/%s.xml", $station);
-  reutrn $filename if !(one_day_ago($filename));
+  return $filename if !(one_day_ago($filename));
 
   my $http= HTTP::Tiny->new;
   open(my $fh, ">", $filename);
   my $url= sprintf("http://radiko.jp/v3/program/station/weekly/%s.xml", $station);
-  print($fh $http->get($url)->{content});
+
+  my $ret= $http->get($url);
+  if ($ret->{success})
+  {
+    printf("GET %s succeeded\n", $url) if $verbose;
+    print($fh $http->get($url)->{content});
+  }
+  else
+  {
+    print(STDERR "$url failed");
+  }
+
   close($fh);
 
   return $filename;
@@ -128,6 +144,7 @@ sub read_cache
   my @buff= <$fh>;
   close($fh);
 
+  printf("Start to read %s\n", $filename) if $verbose;
   my $xml= XMLin(join("\n", @buff), keyattr => {});
   my $program= $xml->{stations}->{station}->{progs};
  
