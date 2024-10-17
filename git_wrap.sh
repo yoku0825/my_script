@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-# Copyright (C) 2016, 2018  yoku0825
+# Copyright (C) 2016, 2024  yoku0825
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -47,6 +47,10 @@ case "$command" in
     ;;
   "tree")
     git log --graph --all --format="%x09%C(cyan bold)%an%Creset%x09%C(yellow)%h%Creset %C(magenta reverse)%d%Creset %s"
+    ;;
+  "rollback")
+    git clean -df
+    git reset --hard HEAD
     ;;
   *)
     git $command $*
