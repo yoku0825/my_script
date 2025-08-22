@@ -163,7 +163,7 @@ function stop_all_containers
 function display_one_information
 {
   container_id="$1"
-  docker inspect -f "{{.Name}}, {{.Config.Hostname}}, {{.NetworkSettings.IPAddress}}, {{.Config.Entrypoint}}, {{.Config.Cmd}}, {{.NetworkSettings.Ports}}" $container_id | sed 's|^/||'
+  docker inspect -f '{{.Name}}, {{.Config.Hostname}}, {{if .NetworkSettings.IPAddress}}{{.NetworkSettings.IPAddress}}{{else}}{{range $k,$v := .NetworkSettings.Networks}}{{$v.IPAddress}}{{break}}{{end}}{{end}}, {{.Config.Entrypoint}}, {{.Config.Cmd}}, {{.NetworkSettings.Ports}}' $container_id | sed 's|^/||'
 }
 
 function display_all_information
