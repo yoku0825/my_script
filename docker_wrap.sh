@@ -163,7 +163,8 @@ function stop_all_containers
 function display_one_information
 {
   container_id="$1"
-  docker inspect -f '{{.Name}}, {{.Config.Hostname}}, {{if .NetworkSettings.IPAddress}}{{.NetworkSettings.IPAddress}}{{else}}{{range $k,$v := .NetworkSettings.Networks}}{{$v.IPAddress}}{{break}}{{end}}{{end}}, {{.Config.Entrypoint}}, {{.Config.Cmd}}, {{.NetworkSettings.Ports}}' $container_id | sed 's|^/||'
+
+  docker inspect "$container_id" | perl -MJSON -e 'my $json_string= do { local $/; <> }; my $json= from_json($json_string); $json= $json->[0]; printf("%s\t%s\t%s\t%s\t%s\t%s\n", $json->{Name}, $json->{Config}->{Hostname}, $json->{NetworkSettings}->{IPAddress} // $json->{NetworkSettings}->{Networks}->{bridge}->{IPAddress}, $json->{Config}->{Entrypoint}->[0], join(" ", @{$json->{Config}->{Cmd}}), to_json($json->{NetworkSettings}->{Ports}))' | sed 's|^/||'
 }
 
 function display_all_information
