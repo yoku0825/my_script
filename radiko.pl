@@ -15,7 +15,7 @@ use Config::Pit qw{pit_get};
 my @keyword= qw{ radio_title_which_you_want_download };
 binmode STDOUT, ":utf8";
 
-my $image_name="yyoshiki41/radigo:v0.11.0";
+my $exec= "/home/yoku0825/git/radigo/radigo";
 my $verbose= 0;
 
 create_list();
@@ -38,7 +38,7 @@ foreach my $prog (@$hash)
 {
   if ($prog->{from} < $term->strftime("%Y%m%d%H%M%S"))
   {
-    my ($command, $origfile, $newfile)= make_docker_run_command($prog);
+    my ($command, $origfile, $newfile)= make_command($prog);
     if (!(-e $newfile))
     {
       if (-e $origfile)
@@ -63,12 +63,12 @@ $|=1;
   }
 }
 
-sub make_docker_run_command
+sub make_command
 {
   my ($prog)= @_;
 
-  my $command= sprintf("docker run --rm -v %s/output:/output %s rec -id=%s -start=%s -output=mp3",
-                       $ENV{PWD}, $image_name, $prog->{station}, $prog->{from});
+  my $command= sprintf("%s rec -id=%s -start=%s -output=mp3",
+                       $exec, $prog->{station}, $prog->{from});
   my $origfile= sprintf("%s-%s.mp3", $prog->{from}, $prog->{station});
   my $newfile = sprintf("%s_%s.mp3", substr($prog->{from}, 0, 8), $prog->{title});
 
@@ -90,8 +90,15 @@ sub create_list
   foreach my $station (qw{TBS QRR LFR RN1 RN2 INT FMT FMJ JORF BAYFM78 NACK5 YFM})
   {
     print $station, "\n" if $verbose;
-    my $filename= create_cache($station) || die $!;
-    my $program = read_cache($filename) || die $!;
+    my $filename= create_cache($station);
+
+    if (!($filename))
+    {
+      ### GET failed or invalid XML -> $filename = undef, skipping.
+      next;
+    }
+      
+    my $program = read_cache($filename);
     
     foreach (@$program)
     {
@@ -127,11 +134,26 @@ sub create_cache
   if ($ret->{success})
   {
     printf("GET %s succeeded\n", $url) if $verbose;
-    print($fh $http->get($url)->{content});
+
+    ### Validate XML
+    eval
+    {
+      XMLin($ret->{content});
+    };
+
+    if ($@)
+    {
+      printf(STDERR "GET %s succeeded but invalid XML(file: %s)", $url, $filename);
+      $filename= undef;
+    }
+    else
+    {
+      print($fh $ret->{content});
+    }
   }
   else
   {
-    print(STDERR "$url failed");
+    print(STDERR "GET $url failed");
   }
 
   close($fh);
@@ -148,7 +170,17 @@ sub read_cache
   close($fh);
 
   printf("Start to read %s\n", $filename) if $verbose;
-  my $xml= XMLin(join("\n", @buff), keyattr => {});
+  my $xml;
+  eval
+  {
+    $xml= XMLin(join("\n", @buff), keyattr => {});
+  };
+  if ($@)
+  {
+    print(STDERR "$@ : Remove $filename");
+    unlink($filename);
+    return [];
+  }
   my $program= $xml->{stations}->{station}->{progs};
  
   return $program;
