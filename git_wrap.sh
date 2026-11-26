@@ -34,6 +34,7 @@ case "$command" in
     ;;
   "gc")
     git checkout master
+    git remote prune origin
     git branch -d $(git branch -a | grep -v master)
     git gc
     ;;
@@ -42,7 +43,8 @@ case "$command" in
     ;;
   "pr")
     pr_num="$1"
-    git fetch origin pull/${pr_num}/head:pull_${pr_num}
+    path="pull/${pr_num}/head:pull_${pr_num}"
+    git fetch origin "$path" || git fetch upstream "$path"
     git checkout pull_${pr_num}
     ;;
   "tree")
